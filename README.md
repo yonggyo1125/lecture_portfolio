@@ -3,6 +3,8 @@
 ## 회원
 
 - 이메일 전송 - 비밀번호 초기화, 회원 가입 인증
+    - [소스보기](https://github.com/yonggyo1125/lecture_portfolio/tree/member-email)
+    - [강의보기](https://github.com/yonggyo1125/lecture_portfolio/blob/member-email/MEMBER_EMAIL.md)
 - 자동 로그인(스프링 시큐리티 - remember-me 기능 이용)
 - 소셜로그인 - 네이버, 카카오
 - 채팅
