@@ -287,5 +287,149 @@ public class EmailSendTest {
 
 ## 회원 가입 인증
 
+> 1. 회원가입 양식에 이메일 입력항목 옆 인증 버튼 추가 
+> 2. 인증버튼을 클릭하면 입력한 이메일로 인증 번호 전송 
+> 3. 인증번호는 3분으로 유효시간 설정, 인증시간 카운트 시작
+> 4. 회원 가입처리에서도 이메일 인증 여부 체크
+
+### 이메일 인증 소스 구현 
+
+> resources/messages/commons.properties
+
+```properties
+
+... 
+
+인증하기=인증하기
+Email.verification.subject=회원가입 이메일 인증메일 입니다.
+Email.verification.message=발급된 인증코드를 회원가입 항목에 입력하세요.
+```
+
+> email/service/EmailVerifyService.java
+
+```java
+package org.choongang.email.service;
+
+import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
+import org.choongang.commons.Utils;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@Service
+@RequiredArgsConstructor
+public class EmailVerifyService {
+    private final EmailSendService sendService;
+    private final HttpSession session;
+
+    /**
+     * 이메일 인증 번호 발급 전송
+     *
+     * @param email
+     * @return
+     */
+    public boolean sendCode(String email) {
+        int authNum = (int)(Math.random() * 99999);
+
+        session.setAttribute("EmailAuthNum", authNum);
+        session.setAttribute("EmailAuthStart", System.currentTimeMillis());
+
+        EmailMessage emailMessage = new EmailMessage(
+                email,
+                Utils.getMessage("Email.verification.subject", "commons"),
+                Utils.getMessage("Email.verification.message", "commons"));
+        Map<String, Object> tplData = new HashMap<>();
+        tplData.put("authNum", authNum);
+
+        return sendService.sendMail(emailMessage, "auth", tplData);
+    }
+
+    /**
+     * 발급 받은 인증번호와 사용자 입력 코드와 일치 여부 체크
+     *
+     * @param code
+     * @return
+     */
+    public boolean check(int code) {
+
+        Integer authNum = (Integer)session.getAttribute("EmailAuthNum");
+        Long stime = (Long)session.getAttribute("EmailAuthStart");
+        if (authNum != null && stime != null) {
+            /* 인증 시간 만료 여부 체크 - 3분 유효시간 S */
+            boolean isExpired = (System.currentTimeMillis() - stime.longValue()) > 1000 * 60 * 3;
+            if (isExpired) { // 만료되었다면 세션 비우고 검증 실패 처리
+                session.removeAttribute("EmailAuthNum");
+                session.removeAttribute("EmailAuthStart");
+
+                return false;
+            }
+            /* 인증 시간 만료 여부 체크 E */
+
+            // 사용자 입력 코드와 발급 코드가 일치하는지 여부 체크 
+            return code == stime.intValue();
+        }
+
+        return false;
+    }
+}
+```
+
+### 회원가입 전용 자바스크립트, 스타일시트 파일 추가 
+> 1. static/front/js/member/join.js
+> 2. static/front/css/member/join.css
+> 3. static/mobile/js/member/join.js
+> 4. static/mobile/css/member/join.css
+
+### 회원가입 주소 유입시 회원가입 전용 자바스크립트, 스타일시트 추가 
+
+> member/controllers/MemberController.java
+
+```java
+...
+public class MemberController implements ExceptionProcessor {
+
+    ...
+
+    private void commonProcess(String mode, Model model) {
+        mode = StringUtils.hasText(mode) ? mode : "join";
+        String pageTitle = Utils.getMessage("회원가입", "commons");
+
+        List<String> addCss = new ArrayList<>();
+        List<String> addScript = new ArrayList<>();
+
+        if (mode.equals("login")) { // 로그인
+            pageTitle = Utils.getMessage("로그인", "commons");
+
+        } else if (mode.equals("join")) { // 회원가입
+            addCss.add("member/join");
+            addScript.add("member/join");
+        }
+
+        model.addAttribute("pageTitle", pageTitle);
+        model.addAttribute("addCss", addCss);
+        model.addAttribute("addScript", addScript);
+    }
+}
+```
+
+### 회원가입 템플릿에 인증하기 버튼 추가
+> resources/templates/front/member/join.html
+
+```html
+...
+<dl>
+    <dt th:text="#{이메일}"></dt>
+    <dd>
+        <input type="text" name="email" th:field="*{email}">
+        <button type="button" id="email_verify" th:text="#{인증하기}"></button>
+        <div class="error" th:each="err : ${#fields.errors('email')}" th:text="${err}"></div>
+    </dd>
+</dl>
+...
+```
+
+
 ## 비밀번호 초기화
 

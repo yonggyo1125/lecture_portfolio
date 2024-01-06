@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Controller
 @RequestMapping("/member")
 @RequiredArgsConstructor
@@ -53,10 +56,20 @@ public class MemberController implements ExceptionProcessor {
     private void commonProcess(String mode, Model model) {
         mode = StringUtils.hasText(mode) ? mode : "join";
         String pageTitle = Utils.getMessage("회원가입", "commons");
-        if (mode.equals("login")) {
+
+        List<String> addCss = new ArrayList<>();
+        List<String> addScript = new ArrayList<>();
+
+        if (mode.equals("login")) { // 로그인
             pageTitle = Utils.getMessage("로그인", "commons");
+
+        } else if (mode.equals("join")) { // 회원가입
+            addCss.add("member/join");
+            addScript.add("member/join");
         }
 
         model.addAttribute("pageTitle", pageTitle);
+        model.addAttribute("addCss", addCss);
+        model.addAttribute("addScript", addScript);
     }
 }
