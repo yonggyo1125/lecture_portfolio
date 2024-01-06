@@ -367,8 +367,8 @@ public class EmailVerifyService {
             }
             /* 인증 시간 만료 여부 체크 E */
 
-            // 사용자 입력 코드와 발급 코드가 일치하는지 여부 체크 
-            return code == stime.intValue();
+            // 사용자 입력 코드와 발급 코드가 일치하는지 여부 체크
+            return code == authNum.intValue();
         }
 
         return false;
@@ -396,7 +396,6 @@ public class EmailSendTest {
         assertTrue(result);
     }
 }
-
 ```
 
 전송에 성공하면 다음과 같이 인증번호가 발급 된 메일을 수신 받습니다.
@@ -455,6 +454,48 @@ public class ApiEmailController {
         data.setSuccess(result);
 
         return data;
+    }
+}
+```
+
+> src/test/java/.../email/EmailApiTest.java : API 통합 테스트
+
+```java
+package org.choongang.email;
+
+import jakarta.servlet.http.HttpSession;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+public class EmailApiTest {
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    @DisplayName("이메일 인증 코드 발급 및 검증 테스트")
+    void sendVerifyEmailTest() throws Exception {
+        /* 인증 코드 발급 테스트 S */
+        HttpSession session = mockMvc.perform(get("/api/email/verify?email=yonggyo00@kakao.com"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn().getRequest().getSession();
+        Integer authNum = (Integer)session.getAttribute("EmailAuthNum");
+        /* 인증 코드 발급 테스트 E */
+
+        /* 인증 코드 검증 테스트 S */
+        mockMvc.perform(get("/api/email/auth_check?authNum=" + authNum.intValue()))
+                .andDo(print());
+        /* 인증 코드 검증 테스트 E */
     }
 }
 ```

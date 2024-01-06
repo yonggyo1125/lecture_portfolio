@@ -3,10 +3,7 @@ package org.choongang.email.controllers;
 import lombok.RequiredArgsConstructor;
 import org.choongang.commons.rests.JSONData;
 import org.choongang.email.service.EmailVerifyService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/email")
