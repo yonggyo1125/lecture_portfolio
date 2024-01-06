@@ -1,5 +1,8 @@
 # 포트폴리오 기능 구현 강의
 
+## 공통
+- [ajax 관련 소스](https://github.com/yonggyo1125/lecture_portfolio/blob/member-email/AJAX.md)
+  
 ## 회원
 
 - 이메일 전송 - 비밀번호 초기화, 회원 가입 인증

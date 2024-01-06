@@ -1,3 +1,10 @@
+# Ajax 관련 소스 추가 
+
+## ajax 요청 함수 
+
+> resources/static/common/js/common.js
+
+```javascript
 var commonLib = commonLib || {};
 
 /**
@@ -43,3 +50,26 @@ commonLib.ajaxLoad = function(method, url, params, responseType) {
         };
     });
 }
+```
+
+## csrf 토큰 추가 
+
+> ajax 요청시 요청 헤더에 스프링 시큐리티에서 생성하는 csrf 토큰을 함께 전송해야 정상 처리 됩니다. 다음과 같이 추가 합니다.
+
+> templates/admin/layouts/main.html
+> templates/front/layouts/main.html
+> templates/mobile/layouts/main.html
+
+```html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    ...
+</head>
+...
+</html>
+```
