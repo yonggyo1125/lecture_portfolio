@@ -502,10 +502,10 @@ public class EmailApiTest {
 
 
 ### 회원가입 전용 자바스크립트, 스타일시트 파일 추가 
-> 1. static/front/js/member/join.js
-> 2. static/front/css/member/join.css
-> 3. static/mobile/js/member/join.js
-> 4. static/mobile/css/member/join.css
+> 1. resources/static/front/js/member/join.js
+> 2. resources/static/front/css/member/join.css
+> 3. resources/static/mobile/js/member/join.js
+> 4. resources/static/mobile/css/member/join.css
 
 ### 회원가입 주소 유입시 회원가입 전용 자바스크립트, 스타일시트 추가 
 
@@ -555,6 +555,11 @@ public class MemberController implements ExceptionProcessor {
 ...
 ```
 
+> resources/static/front/js/member/join.js
+
+```javascript
+
+```
 
 ## 비밀번호 초기화
 
