@@ -403,6 +403,9 @@ public class EmailSendTest {
 
 ![image6](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/member-email/images/email/image6.png)
 
+### 이메일 인증 요청 API 구현
+
+
 
 ### 회원가입 전용 자바스크립트, 스타일시트 파일 추가 
 > 1. static/front/js/member/join.js
