@@ -376,6 +376,34 @@ public class EmailVerifyService {
 }
 ```
 
+> src/test/java/.../email/EmailSendTest.java
+
+```java
+...
+@SpringBootTest
+public class EmailSendTest {
+    ...
+
+    @Autowired
+    private EmailVerifyService emailVerifyService;
+    
+    ...
+
+    @Test
+    @DisplayName("이메일 인증 번호 전송 테스트")
+    void emailVerifyTest() {
+        boolean result = emailVerifyService.sendCode("yonggyo00@kakao.com");
+        assertTrue(result);
+    }
+}
+
+```
+
+전송에 성공하면 다음과 같이 인증번호가 발급 된 메일을 수신 받습니다.
+
+![image6](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/member-email/images/email/image6.png)
+
+
 ### 회원가입 전용 자바스크립트, 스타일시트 파일 추가 
 > 1. static/front/js/member/join.js
 > 2. static/front/css/member/join.css
