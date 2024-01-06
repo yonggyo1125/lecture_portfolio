@@ -43,8 +43,11 @@ spring:
 
 - **Edit Configuration** 클릭
 
+![image1](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/member-email/images/email/image1.png)
+
 - 환경변수를 다음과 같이 설정
 
+![image2](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/member-email/images/email/image2.png)
 
 # 활용하기
 ## 비밀번호 초기화
