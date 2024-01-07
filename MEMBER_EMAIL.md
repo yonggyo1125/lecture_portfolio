@@ -966,10 +966,22 @@ const authCount = {
 ```properties
 ...
 
-비밀번호_찾기=비밀번호_찾기
+비밀번호_찾기=비밀번호 찾기
+비밀번호를_가입하신_이메일로_전송하였습니다.=비밀번호를 가입하신 이메일로 전송하였습니다.
+Email.password.reset=비밀번호 초기화 안내입니다.
 
-... 
+...
 
+```
+
+> resources/messages/validations.properties
+
+```properties
+
+...
+
+# 비밀번호 찾기
+NotBlank.requestFindPw.name=회원명을 입력하세요.
 ```
 
 > resources/templates/front/member/login.html
@@ -991,4 +1003,408 @@ const authCount = {
 ...
 
 ```
+
+> member/repositories/MemberRepository.java : 이메일과 회원명으로 조회되는지 체크하는 메서드 추가 
+
+```java
+... 
+
+public interface MemberRepository extends JpaRepository<Member, Long>, QuerydslPredicateExecutor<Member> {
+    ...
+
+    /**
+     * 이메일과 회원명으로 조회되는지 체크
+     *
+     * @param email
+     * @param name
+     * @return
+     */
+    default boolean existsByEmailAndName(String email, String name) {
+        QMember member = QMember.member;
+        BooleanBuilder builder = new BooleanBuilder();
+        builder.and(member.email.eq(email))
+                .and(member.name.eq(name));
+
+        return exists(builder);
+    }
+}
+```
+
+> member/controllers/RequestFindPw.java : 비밀번호 찾기 양식 관련 커맨드 객체 추가 
+
+```java
+package org.choongang.member.controllers;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
+/**
+ * 비밀번호 찾기 커맨드 객체 정의
+ *
+ */
+public record RequestFindPw(
+        @NotBlank @Email
+        String email,
+
+        @NotBlank
+        String name
+) {}
+```
+
+> member/controllers/FindPwValidator.java : 이메일 + 회원명 조합으로 조회 검증
+
+```java
+package org.choongang.member.controllers;
+
+import lombok.RequiredArgsConstructor;
+import org.choongang.member.repositories.MemberRepository;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
+
+/**
+ * 비밀번호 찾기 추가 검증 처리
+ *
+ */
+@Component
+@RequiredArgsConstructor
+public class FindPwValidator implements Validator {
+
+    private final MemberRepository memberRepository;
+
+    @Override
+    public boolean supports(Class<?> clazz) {
+        return clazz.isAssignableFrom(RequestFindPw.class);
+    }
+
+    @Override
+    public void validate(Object target, Errors errors) {
+
+        // 이메일 + 회원명 조합으로 조회 되는지 체크
+        RequestFindPw form = (RequestFindPw) target;
+        String email = form.email();
+        String name = form.name();
+
+        if (StringUtils.hasText(email) && StringUtils.hasText(name) && !memberRepository.existsByEmailAndName(email, name)) {
+            errors.reject("NotFound.member");
+        }
+    }
+}
+```
+
+> resources/messages/errors.properties 
+
+```properties
+...
+
+NotFound.member=가입되지 않은 회원입니다.
+```
+
+> commons/Utils.java : 자리수 지정 랜덤 문자열 생성 함수 추가
+
+```java
+...
+
+public class Utils {
+    ...
+
+    /**
+     * 알파벳, 숫자, 특수문자 조합 랜덤 문자열 생성
+     *
+     * @return
+     */
+    public String randomChars() {
+        return randomChars(8);
+    }
+
+    public String randomChars(int length) {
+        // 알파벳 생성
+        Stream<String> alphas = IntStream.concat(IntStream.rangeClosed((int)'a', (int)'z'), IntStream.rangeClosed((int)'A', (int)'Z')).mapToObj(s -> String.valueOf((char)s));
+
+        // 숫자 생성
+        Stream<String> nums = IntStream.range(0, 10).mapToObj(String::valueOf);
+
+        // 특수문자 생성
+        Stream<String> specials = Stream.of("~", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "+", "-", "=", "[", "{", "}", "]", ";", ":");
+
+        List<String> chars = Stream.concat(Stream.concat(alphas, nums), specials).collect(Collectors.toCollection(ArrayList::new));
+        Collections.shuffle(chars);
+
+        return chars.stream().limit(length).collect(Collectors.joining());
+    }
+}
+```
+
+> member/service/FindPwService.java : 비밀번호 초기화 처리 및 메일 전송 서비스
+
+```java
+package org.choongang.member.service;
+
+
+import lombok.RequiredArgsConstructor;
+import org.choongang.commons.Utils;
+import org.choongang.email.service.EmailMessage;
+import org.choongang.email.service.EmailSendService;
+import org.choongang.member.controllers.FindPwValidator;
+import org.choongang.member.controllers.RequestFindPw;
+import org.choongang.member.entities.Member;
+import org.choongang.member.repositories.MemberRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.validation.Errors;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * 비밀번호 찾기 양식 검증 및 초기화 메일 전송
+ *
+ */
+@Service
+@RequiredArgsConstructor
+public class FindPwService {
+
+    private final FindPwValidator validator;
+    private final MemberRepository repository;
+    private final EmailSendService sendService;
+    private final PasswordEncoder encoder;
+    private final Utils utils;
+
+    public void process(RequestFindPw form, Errors errors) {
+        validator.validate(form, errors);
+        if (errors.hasErrors()) { // 유효성 검사 실패시에는 처리 중단
+            return;
+        }
+
+        // 비밀번호 초기화
+        reset(form.email());
+
+    }
+
+    public void reset(String email) {
+        /* 비밀번호 초기화 S */
+        Member member = repository.findByEmail(email).orElseThrow(MemberNotFoundException::new);
+
+        String newPassword = utils.randomChars(12); // 초기화 비밀번호는 12자로 생성
+        member.setPassword(encoder.encode(newPassword));
+
+        repository.saveAndFlush(member);
+
+        /* 비밀번호 초기화 E */
+        EmailMessage emailMessage = new EmailMessage(email, Utils.getMessage("Email.password.reset", "commons"), Utils.getMessage("Email.password.reset", "commons"));
+        Map<String, Object> tplData = new HashMap<>();
+        tplData.put("password", newPassword);
+        sendService.sendMail(emailMessage, "password_reset", tplData);
+    }
+}
+```
+
+> resources/templates/email/password_reset.html : 비밀번호 초기화 이메일 템플릿
+
+```html 
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>비밀번호 초기화 안내</title>
+</head>
+<body>
+    <div th:text="${subject}"></div>
+    <div>
+        <th:block th:text="#{비밀번호}"></th:block>: <th:block th:text="${password}"></th:block>
+    </div>
+</body>
+</html>
+```
+
+> src/test/java/.../member/FindPwServiceTest.java : 초기화된 비밀번호 업데이트 및 메일전송 테스트
+
+```java 
+package org.choongang.member;
+
+import org.choongang.member.service.FindPwService;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
+@SpringBootTest
+public class FindPwServiceTest {
+
+    @Autowired
+    private FindPwService service;
+
+    @Test
+    @DisplayName("비밀번호 초기화 및 초기화된 메일 이메일 전송 테스트")
+    void resetTest() {
+        assertDoesNotThrow(() -> service.reset("yonggyo00@kakao.com"));
+    }
+}
+```
+
+테스트에 통과하면 초기화된 비밀번호 안내 메일이 전송되며, 새로운 비밀번호로 로그인이 되면 성공입니다.
+
+![image8](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/member-email/images/email/image8.png)
+
+
+> member/controllers/MemberController.java : 비밀번호 찾기 컨트롤러 처리
+
+```java
+...
+public class MemberController implements ExceptionProcessor {
+    ...
+    
+    private final FindPwService findPwService;
+    
+    ...
+
+    /**
+     * 비밀번호 찾기 양식
+     *
+     * @param model
+     * @return
+     */
+    @GetMapping("/find_pw")
+    public String findPw(@ModelAttribute RequestFindPw form, Model model) {
+        commonProcess("find_pw", model);
+
+        return utils.tpl("member/find_pw");
+    }
+
+    /**
+     * 비밀번호 찾기 처리
+     *
+     * @param model
+     * @return
+     */
+    @PostMapping("/find_pw")
+    public String findPwPs(@Valid RequestFindPw form, Errors errors, Model model) {
+        commonProcess("find_pw", model);
+
+        findPwService.process(form, errors); // 비밀번호 찾기 처리
+
+        if (errors.hasErrors()) {
+            return utils.tpl("member/find_pw");
+        }
+
+        // 비밀번호 찾기에 이상 없다면 완료 페이지로 이동
+        return "redirect:/member/find_pw_done";
+    }
+
+    /**
+     * 비밀번호 찾기 완료 페이지
+     *
+     * @param model
+     * @return
+     */
+    @GetMapping("/find_pw_done")
+    public String findPwDone(Model model) {
+        commonProcess("find_pw", model);
+
+        return utils.tpl("member/find_pw_done");
+    }
+
+    private void commonProcess(String mode, Model model) {
+        ...
+
+        if (mode.equals("login")) { // 로그인
+            pageTitle = Utils.getMessage("로그인", "commons");
+
+        } else if (mode.equals("join")) { // 회원가입
+            addCss.add("member/join");
+            addScript.add("member/join");
+
+        } else if (mode.equals("find_pw")) { // 비밀번호 찾기
+            pageTitle = Utils.getMessage("비밀번호_찾기", "commons");
+        }
+        
+        ...
+    }
+}
+```
+
+> resources/templates/front/member/find_pw.html : 비밀번호 찾기 템플릿 
+
+```html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{front/layouts/main}">
+<main layout:fragment="content">
+    <h1 th:text="#{비밀번호_찾기}"></h1>
+    <div th:text="#{비밀번호를_가입하신_이메일로_전송하였습니다.}"></div>
+    <a th:href="@{/member/login}" th:text="#{로그인}"></a>
+</main>
+</html>
+```
+
+
+> resources/templates/mobile/member/find_pw.html : 비밀번호 찾기 템플릿
+
+```html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{mobile/layouts/main}">
+<main layout:fragment="content">
+    <h1 th:text="#{비밀번호_찾기}"></h1>
+
+    <form name="frmFindPw" method="post" th:action="@{/member/find_pw}" autocomplete="off" th:object="${requestFindPw}">
+
+        <input type="text" name="email" th:field="*{email}" th:placeholder="#{이메일}">
+        <div class="error" th:each="err : ${#fields.errors('email')}" th:text="${err}"></div>
+
+
+        <input type="text" name="email" th:field="*{name}" th:placeholder="#{회원명}">
+        <div class="error" th:each="err : ${#fields.errors('name')}" th:text="${err}"></div>
+
+        <button type="submit" th:text="#{비밀번호_찾기}"></button>
+        <div class="error global" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></div>
+    </form>
+</main>
+</html>
+```
+
+> resources/templates/front/member/find_pw_done.html : 비밀번호 찾기 완료 페이지
+
+```html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{front/layouts/main}">
+<main layout:fragment="content">
+    <h1 th:text="#{비밀번호_찾기}"></h1>
+    <div th:text="#{비밀번호를_가입하신_이메일로_전송하였습니다.}"></div>
+    <a th:href="@{/member/login}" th:text="#{로그인}"></a>
+</main>
+</html>
+```
+
+> resources/templates/mobile/member/find_pw_done.html : 비밀번호 찾기 완료 페이지
+
+```html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{mobile/layouts/main}">
+<main layout:fragment="content">
+    <h1 th:text="#{비밀번호_찾기}"></h1>
+    <div th:text="#{비밀번호를_가입하신_이메일로_전송하였습니다.}"></div>
+    <a th:href="@{/member/login}" th:text="#{로그인}"></a>
+</main>
+</html>
+```
+
+
+비밀번호 찾기 화면 
+
+![image9](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/member-email/images/email/image9.png)
+
+
+
+비밀번호 찾기 완료 화면
+
+![image10](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/member-email/images/email/image10.png)
 
