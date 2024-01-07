@@ -80,3 +80,15 @@ Email.password.reset=비밀번호 초기화 안내입니다.
 
 자동_로그인=Remember me
 ```
+
+> http://localhost:3000/member/join 으로 접근했을 때
+
+![image1](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/localization/images/localization/image1.png)
+
+> http://localhost:3000/member/join?language=en 으로 접근했을 때
+
+![image2](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/localization/images/localization/image2.png)
+
+> 쿠키에 language 값 1시간 유지
+
+![image3](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/localization/images/localization/image3.png)
