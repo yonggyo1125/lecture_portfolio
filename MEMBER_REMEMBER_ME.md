@@ -67,8 +67,11 @@ public class SecurityConfig {
 
 로그인 페이지 구현 화면 
 
-
+![image1](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/member-remember-me/images/remember_me/image1.png)
 
 > 자동 로그인을 체크하고 로그인을 하면 remember-me라는 쿠키가 생성이 되며 해당 토큰으로 remember-me 필터에서 자동 로그인을 처리하게 됩니다. 
 >
 > 정상적으로 자동 로그인이 되었다면 다음과 같은 쿠키를 확인할 수 있습니다. 
+
+![image2](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/member-remember-me/images/remember_me/image2.png)
+
