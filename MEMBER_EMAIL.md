@@ -682,7 +682,7 @@ public class ApiMemberController implements ExceptionRestProcessor {
 
 ```
 
-> resources/static/common/js/common.js : 이메일 인증 메일 보내기 함수 추가
+> resources/static/common/js/common.js : 이메일 인증 메일 보내기 및 검증 함수 추가
 
 ```javascript
 
