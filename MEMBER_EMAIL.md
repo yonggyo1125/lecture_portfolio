@@ -959,3 +959,36 @@ const authCount = {
 > 4. 가입한 이메일로 초기화된 비밀번호 전송
 
 
+### 로그인페이지에서 비밀번호 찾기 링크 추가 
+
+> resources/messages/commons.properties
+
+```properties
+...
+
+비밀번호_찾기=비밀번호_찾기
+
+... 
+
+```
+
+> resources/templates/front/member/login.html
+> 
+> resources/templates/mobile/member/login.html
+
+```html
+...
+
+<h1 th:text="#{로그인}"></h1>
+<form name="frmLogin" method="post" th:action="@{/member/login}" autocomplete="off">
+    ...
+
+    <a th:href="@{/member/find_pw}" th:text="#{비밀번호_찾기}"></a>
+    
+    ... 
+</form>
+
+...
+
+```
+
