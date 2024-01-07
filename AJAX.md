@@ -57,7 +57,9 @@ commonLib.ajaxLoad = function(method, url, params, responseType) {
 > ajax 요청시 요청 헤더에 스프링 시큐리티에서 생성하는 csrf 토큰을 함께 전송해야 정상 처리 됩니다. 다음과 같이 추가 합니다.
 
 > templates/admin/layouts/main.html
+> 
 > templates/front/layouts/main.html
+> 
 > templates/mobile/layouts/main.html
 
 ```html
