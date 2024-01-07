@@ -15,7 +15,7 @@
 - 채팅
 
 ## 지역화
-- [국가별 언어 수동 변경](https://github.com/yonggyo1125/lecture_portfolio/blob/localization/LOCALIZATION.md#%EA%B5%AD%EA%B0%80%EB%B3%84-%EC%96%B8%EC%96%B4-%EC%88%98%EB%8F%99-%EB%B3%80%EA%B2%BD)
+- [국가별 언어 수동 변경](https://github.com/yonggyo1125/lecture_portfolio/blob/localization/LOCALIZATION.md)
 
 ## 상품 & 주문 
 - 찜기능
