@@ -58,7 +58,10 @@ public class EmailVerifyService {
             /* 인증 시간 만료 여부 체크 E */
 
             // 사용자 입력 코드와 발급 코드가 일치하는지 여부 체크
-            return code == authNum.intValue();
+            boolean isVerified = code == authNum.intValue();
+            session.setAttribute("EmailAuthVerified", isVerified);
+
+            return isVerified;
         }
 
         return false;

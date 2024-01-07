@@ -298,9 +298,13 @@ public class EmailSendTest {
 
 ```properties
 
-... 
+...
 
-인증하기=인증하기
+인증코드전송=인증코드전송
+인증코드_입력=인증코드 입력
+확인=확인
+재전송=재전송
+확인된_이메일_입니다.=확인된 이메일 입니다.
 Email.verification.subject=회원가입 이메일 인증메일 입니다.
 Email.verification.message=발급된 인증코드를 회원가입 항목에 입력하세요.
 ```
@@ -407,53 +411,73 @@ public class EmailSendTest {
 > email/controllers/ApiEmailController.java
 
 ```java
-package org.choongang.email.controllers;
+package org.choongang.email.service;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.choongang.commons.rests.JSONData;
-import org.choongang.email.service.EmailVerifyService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.choongang.commons.Utils;
+import org.springframework.stereotype.Service;
 
-@RestController
-@RequestMapping("/api/email")
+import java.util.HashMap;
+import java.util.Map;
+
+@Service
 @RequiredArgsConstructor
-public class ApiEmailController {
-
-    private final EmailVerifyService verifyService;
+public class EmailVerifyService {
+    private final EmailSendService sendService;
+    private final HttpSession session;
 
     /**
-     * 이메일 인증 코드 발급
+     * 이메일 인증 번호 발급 전송
      *
      * @param email
      * @return
      */
-    @GetMapping("/verify")
-    public JSONData<Object> sendVerifyEmail(@RequestParam("email") String email) {
-        JSONData<Object> data = new JSONData<>();
+    public boolean sendCode(String email) {
+        int authNum = (int)(Math.random() * 99999);
 
-        boolean result = verifyService.sendCode(email);
-        data.setSuccess(result);
+        session.setAttribute("EmailAuthNum", authNum);
+        session.setAttribute("EmailAuthStart", System.currentTimeMillis());
 
-        return data;
+        EmailMessage emailMessage = new EmailMessage(
+                email,
+                Utils.getMessage("Email.verification.subject", "commons"),
+                Utils.getMessage("Email.verification.message", "commons"));
+        Map<String, Object> tplData = new HashMap<>();
+        tplData.put("authNum", authNum);
+
+        return sendService.sendMail(emailMessage, "auth", tplData);
     }
 
     /**
-     * 발급받은 인증코드와 사용자 입력 코드의 일치 여부 체크
+     * 발급 받은 인증번호와 사용자 입력 코드와 일치 여부 체크
      *
-     * @param authNum
+     * @param code
      * @return
      */
-    @GetMapping("/auth_check")
-    public JSONData<Object> checkVerifiedEmail(@RequestParam("authNum") int authNum) {
-        JSONData<Object> data = new JSONData<>();
+    public boolean check(int code) {
 
-        boolean result = verifyService.check(authNum);
-        data.setSuccess(result);
+        Integer authNum = (Integer)session.getAttribute("EmailAuthNum");
+        Long stime = (Long)session.getAttribute("EmailAuthStart");
+        if (authNum != null && stime != null) {
+            /* 인증 시간 만료 여부 체크 - 3분 유효시간 S */
+            boolean isExpired = (System.currentTimeMillis() - stime.longValue()) > 1000 * 60 * 3;
+            if (isExpired) { // 만료되었다면 세션 비우고 검증 실패 처리
+                session.removeAttribute("EmailAuthNum");
+                session.removeAttribute("EmailAuthStart");
 
-        return data;
+                return false;
+            }
+            /* 인증 시간 만료 여부 체크 E */
+
+            // 사용자 입력 코드와 발급 코드가 일치하는지 여부 체크
+            boolean isVerified = code == authNum.intValue();
+            session.setAttribute("EmailAuthVerified", isVerified);
+
+            return isVerified;
+        }
+
+        return false;
     }
 }
 ```
@@ -507,13 +531,38 @@ public class EmailApiTest {
 > 3. resources/static/mobile/js/member/join.js
 > 4. resources/static/mobile/css/member/join.css
 
-### 회원가입 주소 유입시 회원가입 전용 자바스크립트, 스타일시트 추가 
+### 회원가입 주소 유입시 회원가입 전용 자바스크립트, 스타일시트 추가, 이메일 인증 여부 세션값 초기 처리
 
 > member/controllers/MemberController.java
 
 ```java
 ...
+@SessionAttributes("EmailAuthVerified")
 public class MemberController implements ExceptionProcessor {
+
+    ...
+
+    @GetMapping("/join")
+    public String join(@ModelAttribute RequestJoin form, Model model) {
+        
+        ... 
+        
+        // 이메일 인증 여부 false로 초기화
+        model.addAttribute("EmailAuthVerified", false);
+        
+        return utils.tpl("member/join");
+    }
+
+    @PostMapping("/join")
+    public String joinPs(@Valid RequestJoin form, Errors errors, Model model, SessionStatus sessionStatus) {
+        
+        ...
+
+        // EmailAuthVerified 세션값 비우기 */
+        sessionStatus.setComplete();
+
+        return "redirect:/member/login";
+    }
 
     ...
 
@@ -538,8 +587,48 @@ public class MemberController implements ExceptionProcessor {
     }
 }
 ```
+### 회원가입 이메일 중복 여부 체크 추가 
 
-### 회원가입 템플릿에 인증하기 버튼 추가
+> member/controllers/ApiMemberController.java 
+
+```java
+package org.choongang.member.controllers;
+
+import lombok.RequiredArgsConstructor;
+import org.choongang.commons.ExceptionRestProcessor;
+import org.choongang.commons.rests.JSONData;
+import org.choongang.member.repositories.MemberRepository;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/member")
+@RequiredArgsConstructor
+public class ApiMemberController implements ExceptionRestProcessor {
+
+    private final MemberRepository memberRepository;
+
+    /**
+     * 이메일 중복 여부 체크
+     * @param email
+     * @return
+     */
+    @GetMapping("/email_dup_check")
+    public JSONData<Object> duplicateEmailCheck(@RequestParam("email") String email) {
+        boolean isExists = memberRepository.existsByEmail(email);
+
+        JSONData<Object> data = new JSONData<>();
+        data.setSuccess(isExists);
+
+        return data;
+    }
+}
+```
+
+### 회원가입 템플릿에 이메일 인증 관련 코드 추가
+
 > resources/templates/front/member/join.html
 
 ```html
@@ -547,18 +636,315 @@ public class MemberController implements ExceptionProcessor {
 <dl>
     <dt th:text="#{이메일}"></dt>
     <dd>
-        <input type="text" name="email" th:field="*{email}">
-        <button type="button" id="email_verify" th:text="#{인증하기}"></button>
+        <div>
+            <input type="text" name="email" th:field="*{email}" th:readonly="${session.EmailAuthVerified != null && session.EmailAuthVerified}">
+            <button th:if="${session.EmailAuthVerified == null || !session.EmailAuthVerified}" type="button" id="email_verify" th:text="#{인증코드전송}"></button>
+        </div>
+        <div class="auth_box">
+            <th:block th:if="${session.EmailAuthVerified == null || !session.EmailAuthVerified}">
+                <input type="text" id="auth_num" th:placeholder="#{인증코드_입력}">
+                <span id="auth_count">03:00</span>
+                <button type="button" id="email_confirm" th:text="#{확인}" disabled></button>
+                <button type="button" id="email_re_verify" th:text="#{재전송}" disabled></button>
+            </th:block>
+            <th:block th:unless="${session.EmailAuthVerified == null || !session.EmailAuthVerified}">
+                <span class='confirmed' th:text="#{확인된_이메일_입니다.}"></span>
+            </th:block>
+        </div>
         <div class="error" th:each="err : ${#fields.errors('email')}" th:text="${err}"></div>
+
     </dd>
 </dl>
 ...
 ```
 
-> resources/static/front/js/member/join.js
+> resources/templates/mobile/member/join.html
+
+```html
+...
+<div>
+    <input type="text" name="email" th:field="*{email}" th:placeholder="#{이메일}" th:readonly="${session.EmailAuthVerified != null && session.EmailAuthVerified}">
+    <button th:if="${session.EmailAuthVerified == null || !session.EmailAuthVerified}" type="button" id="email_verify" th:text="#{인증코드전송}"></button>
+</div>
+<div class="auth_box">
+    <th:block th:if="${session.EmailAuthVerified == null || !session.EmailAuthVerified}">
+        <input type="text" id="auth_num" th:placeholder="#{인증코드_입력}">
+        <span id="auth_count">03:00</span>
+        <button type="button" id="email_confirm" th:text="#{확인}" disabled></button>
+        <button type="button" id="email_re_verify" th:text="#{재전송}" disabled></button>
+    </th:block>
+    <th:block th:unless="${session.EmailAuthVerified == null || !session.EmailAuthVerified}">
+        <span class='confirmed' th:text="#{확인된_이메일_입니다.}"></span>
+    </th:block>
+</div>
+<div class="error" th:each="err : ${#fields.errors('email')}" th:text="${err}"></div>
+...
+
+```
+
+> resources/static/common/js/common.js : 이메일 인증 메일 보내기 함수 추가
 
 ```javascript
 
+...
+
+var commonLib = commonLib || {};
+
+/**
+* ajax 처리
+*
+* @param method : 요청 메서드 - GET, POST, PUT ...
+* @param url : 요청 URL
+* @param responseType : json - 응답 결과를 json 변환, 아닌 경우는 문자열로 반환
+*/
+commonLib.ajaxLoad = function(method, url, params, responseType) {
+    method = !method || !method.trim()? "GET" : method.toUpperCase();
+    const token = document.querySelector("meta[name='_csrf']").content;
+    const header = document.querySelector("meta[name='_csrf_header']").content;
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open(method, url);
+        xhr.setRequestHeader(header, token);
+
+        xhr.send(params);
+        responseType = responseType?responseType.toLowerCase():undefined;
+        if (responseType == 'json') {
+            xhr.responseType=responseType;
+        }
+
+        xhr.onreadystatechange = function() {
+            if (xhr.status == 200 && xhr.readyState == XMLHttpRequest.DONE) {
+                const resultData = responseType == 'json' ? xhr.response : xhr.responseText;
+
+                resolve(resultData);
+            }
+        };
+
+        xhr.onabort = function(err) {
+            reject(err);
+        };
+
+        xhr.onerror = function(err) {
+            reject(err);
+        };
+
+        xhr.ontimeout = function(err) {
+            reject(err);
+        };
+    });
+};
+
+/**
+* 이메일 인증 메일 보내기
+*
+* @param email : 인증할 이메일
+*/
+commonLib.sendEmailVerify = function(email) {
+    const { ajaxLoad } = commonLib;
+
+    const url = `/api/email/verify?email=${email}`;
+
+    ajaxLoad("GET", url, null, "json")
+        .then(data => {
+            if (typeof callbackEmailVerify == 'function') { // 이메일 승인 코드 메일 전송 완료 후 처리 콜백
+                callbackEmailVerify(data);
+            }
+        })
+        .catch(err => console.error(err));
+};
+
+/**
+* 인증 메일 코드 검증 처리
+*
+*/
+commonLib.sendEmailVerifyCheck = function(authNum) {
+    const { ajaxLoad } = commonLib;
+    const url = `/api/email/auth_check?authNum=${authNum}`;
+
+    ajaxLoad("GET", url, null, "json")
+        .then(data => {
+            if (typeof callbackEmailVerifyCheck == 'function') { // 인증 메일 코드 검증 요청 완료 후 처리 콜백
+                callbackEmailVerifyCheck(data);
+            }
+        })
+        .catch(err => console.error(err));
+};
+```
+
+> resources/static/front/js/member/join.js
+> 
+> resources/static/mobile/js/member/join.js
+
+```javascript
+window.addEventListener("DOMContentLoaded", function() {
+    /* 인증 코드 전송 S */
+    const emailVerifyEl = document.getElementById("email_verify"); // 인증코드 전송
+    const emailConfirmEl = document.getElementById("email_confirm"); // 확인 버튼
+    const emailReVerifyEl = document.getElementById("email_re_verify"); // 재전송 버튼
+    const authNumEl = document.getElementById("auth_num"); // 인증코드
+    if (emailVerifyEl) {
+        emailVerifyEl.addEventListener("click", function() {
+            const { ajaxLoad, sendEmailVerify } = commonLib;
+            const email = frmJoin.email.value.trim();
+            if (!email) {
+                alert('이메일을 입력하세요.');
+                frmJoin.email.focus();
+                return;
+            }
+
+            /* 이메일 확인 전 이미 가입된 이메일인지 여부 체크 S */
+            ajaxLoad("GET", `/api/member/email_dup_check?email=${email}`, null, "json")
+                .then(data => {
+                    if (data.success) { // 중복이메일인 경우
+                        alert("이미 가입된 이메일입니다.");
+                        frmJoin.email.focus();
+                    } else { // 중복이메일이 아닌 경우
+                        sendEmailVerify(email); // 이메일 인증 코드 전송
+                        this.disabled = frmJoin.email.readonly = true;
+
+                         /* 인증코드 재전송 처리 S */
+                         if (emailReVerifyEl) {
+                            emailReVerifyEl.addEventListener("click", function() {
+                                sendEmailVerify(email);
+                            });
+                         }
+
+                          /* 인증코드 재전송 처리 E */
+
+                          /* 인증번호 확인 처리 S */
+                          if (emailConfirmEl && authNumEl) {
+                            emailConfirmEl.addEventListener("click", function() {
+                                const authNum = authNumEl.value.trim();
+                                if (!authNum) {
+                                    alert("인증코드를 입력하세요.");
+                                    authNumEl.focus();
+                                    return;
+                                }
+
+                                // 인증코드 확인 요청
+                                const { sendEmailVerifyCheck } = commonLib;
+                                sendEmailVerifyCheck(authNum);
+                            });
+                          }
+                          /* 인증번호 확인 처리 E */
+                    }
+                });
+
+            /* 이메일 확인 전 이미 가입된 이메일인지 여부 체크 E */
+        });
+    }
+    /* 인증 코드 전송 E */
+});
+
+
+/**
+* 이메일 인증 메일 전송 후 콜백 처리
+*
+* @param data : 전송 상태 값
+*/
+function callbackEmailVerify(data) {
+    if (data && data.success) { // 전송 성공
+        alert("인증코드가 이메일로 전송되었습니다. 확인후 인증코드를 입력하세요.");
+
+        /** 3분 유효시간 카운트 */
+        authCount.start();
+
+    } else { // 전송 실패
+        alert("인증코드 전송에 실패하였습니다.");
+    }
+}
+
+/**
+* 인증메일 코드 검증 요청 후 콜백 처리
+*
+* @param data : 인증 상태 값
+*/
+function callbackEmailVerifyCheck(data) {
+    if (data && data.success) { // 인증 성공
+        /**
+        * 인증 성공시
+        * 1. 인증 카운트 멈추기
+        * 2. 인증코드 전송 버튼 제거
+        * 3. 이메일 입력 항목 readonly 속성으로 변경
+        * 4. 인증 성공시 인증코드 입력 영역 제거
+        * 5. 인증 코드 입력 영역에 "확인된 이메일 입니다."라고 출력 처리
+        */
+
+        // 1. 인증 카운트 멈추기
+        if (authCount.intervalId) clearInterval(authCount.intervalId);
+
+        // 2. 인증코드 전송 버튼 제거
+        const emailVerifyEl = document.getElementById("email_verify");
+        emailVerifyEl.parentElement.removeChild(emailVerifyEl);
+
+        // 3. 이메일 입력 항목 readonly 속성으로 변경
+        frmJoin.email.readonly = true;
+
+        // 4. 인증 성공시 인증코드 입력 영역 제거, 5. 인증 코드 입력 영역에 "확인된 이메일 입니다."라고 출력 처리
+        const authBoxEl = document.querySelector(".auth_box");
+        authBoxEl.innerHTML = "<span class='confirmed'>확인된 이메일 입니다.</span>";
+
+    } else { // 인증 실패
+        alert("이메일 인증에 실패하였습니다.");
+    }
+}
+
+/**
+* 유효시간 카운트
+*
+*/
+const authCount = {
+    intervalId : null,
+    count : 60 * 3, // 유효시간 3분
+    /**
+    * 인증 코드 유효시간 시작
+    *
+    */
+    start() {
+        const countEl = document.getElementById("auth_count");
+        if (!countEl) return;
+
+        this.initialize(); // 초기화 후 시작
+
+        this.intervalId = setInterval(function() {
+
+            authCount.count--;
+            if (authCount.count < 0) {
+                authCount.count = 0;
+                clearInterval(authCount.intervalId);
+
+                const emailConfirmEl = document.getElementById("email_confirm"); // 확인 버튼
+                const emailReVerifyEl = document.getElementById("email_re_verify"); // 재전송 버튼
+                const emailVerifyEl = document.getElementById("email_verify"); // 인증코드 전송
+                emailConfirmEl.disabled = emailReVerifyEl.disabled = true;
+                emailVerifyEl.disabled = frmJoin.email.readonly = false;
+                return;
+            }
+
+            const min = Math.floor(authCount.count / 60);
+            const sec = authCount.count - min * 60;
+
+            countEl.innerHTML=`${("" + min).padStart(2, '0')}:${("" + sec).padStart(2, '0')}`;
+        }, 1000);
+    },
+
+    /**
+    * 인증 코드 유효시간 초기화
+    *
+    */
+    initialize() {
+        const countEl = document.getElementById("auth_count");
+        const emailVerifyEl = document.getElementById("email_verify"); // 인증코드 전송
+        const emailConfirmEl = document.getElementById("email_confirm"); // 확인 버튼
+        const emailReVerifyEl = document.getElementById("email_re_verify"); // 재전송 버튼
+        emailConfirmEl.disabled = emailReVerifyEl.disabled = false;
+        emailVerifyEl.disabled = frmJoin.email.readonly = true;
+
+        this.count = 60 * 3;
+        if (this.intervalId) clearInterval(this.intervalId);
+        countEl.innerHTML = "03:00";
+    }
+};
 ```
 
 ## 비밀번호 초기화
