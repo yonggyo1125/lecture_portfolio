@@ -947,5 +947,9 @@ const authCount = {
 };
 ```
 
+완성 화면
+
+![image7](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/member-email/images/email/image7.png)
+
 ## 비밀번호 초기화
 
