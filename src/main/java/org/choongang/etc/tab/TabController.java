@@ -1,8 +1,3 @@
-# Ajax 이용 탭 형태 내용 치환
-
-> etc/tab/TabConroller.java
-
-```java
 package org.choongang.etc.tab;
 
 import lombok.RequiredArgsConstructor;
@@ -34,5 +29,3 @@ public class TabController {
         return utils.tpl("etc/tab/content/" + num);
     }
 }
-```
-

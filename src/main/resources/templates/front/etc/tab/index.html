@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{front/layouts/main}">
+<main layout:fragment="content">
+    <div class="widget_tab">
+        <ul class="tabs">
+            <li>
+                <input type="radio" name="tab" class="tab" value="/etc/tab/content/1" id="widget_tab1" checked>
+                <label for="widget_tab1">탭1</label>
+            </li>
+            <li>
+                <input type="radio" name="tab" class="tab" value="/etc/tab/content/2" id="widget_tab2">
+                <label for="widget_tab2">탭2</label>
+
+            </li>
+            <li>
+                <input type="radio" name="tab" class="tab" value="/etc/tab/content/3" id="widget_tab3">
+                <label for="widget_tab3">탭3</label>
+            </li>
+        </ul>
+        <div class="tab_content"></div>
+    </div>
+</main>
+</html>
