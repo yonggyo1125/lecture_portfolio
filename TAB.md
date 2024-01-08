@@ -143,3 +143,7 @@ window.addEventListener("DOMContentLoaded", function() {
 
 .widget_tab .tab_content { min-height: 300px; border: 1px solid #222; margin-top: 20px; }
 ```
+
+> 완성화면
+
+![image1](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/tab/images/etc/tab/image1.png)
