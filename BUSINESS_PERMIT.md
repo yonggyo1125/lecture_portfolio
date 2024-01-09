@@ -249,4 +249,178 @@ public class ApiConfigController  implements ExceptionProcessor {
 ![image2](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/business/images/business/image2.png)
 
 
-## 사업자 상태 조회 서비스 개발
+## 사업자 상태 판별 함수 
+
+> commons/api/BusinessPermit.java
+
+```java
+package org.choongang.commons.api;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
+
+import java.util.List;
+
+@Data
+@JsonIgnoreProperties
+public class BusinessPermit {
+    private Integer request_cnt;
+    private Integer match_cnt;
+    private String status_code;
+    private List<BusinessPermitData> data;
+}
+
+```
+
+> commons/api/BusinessPermitData.java
+
+```java
+package org.choongang.commons.api;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
+
+@Data
+@JsonIgnoreProperties
+public class BusinessPermitData {
+   private String b_no;
+   private String b_stt;
+   private String b_stt_cd;
+   private String tax_type;
+   private String tax_type_cd;
+   private String end_dt;
+   private String utcc_yn;
+   private String tax_type_change_dt;
+   private String invoice_apply_dt;
+   private String rbf_tax_type;
+   private String rbf_tax_type_cd;
+}
+```
+
+> commons/Utils.java
+
+```java
+public class Utils {
+   private final HttpServletRequest request;
+   private final HttpSession session;
+   private final FileInfoService fileInfoService;
+   private final ConfigInfoService infoService;
+   
+   ...
+
+   /**
+    * 사업자 등록증 상태 체크
+    *
+    * @param permitNo : 사업자 등록증 번호
+    * @return
+    */
+   public boolean checkBusinessPermit(String permitNo) {
+      if (!StringUtils.hasText(permitNo)) {
+         return false;
+      }
+
+      // 사업자 등록증 번호 숫자만 제외하고 제거(숫자로 형식 통일)
+      permitNo = permitNo.replaceAll("\\D", "");
+
+      // API 설정 조회
+      ApiConfig config = infoService.get("apiConfig", ApiConfig.class).orElse(null);
+
+      // 설정이 없거나 공공 API 인증 키가 없는 경우 false
+      if (config == null || !StringUtils.hasText(config.getPublicOpenApiKey())) {
+         return false;
+      }
+
+      String url = String.format("https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=%s", config.getPublicOpenApiKey());
+
+      RestTemplate restTemplate = new RestTemplate();
+
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+      MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+      params.add("b_no", permitNo);
+
+      HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+
+      try {
+         BusinessPermit response = restTemplate.postForObject(new URI(url), request, BusinessPermit.class);
+
+         List<BusinessPermitData> items = response.getData();
+         if (items != null && !items.isEmpty()) {
+            BusinessPermitData data = items.get(0);
+
+            String bStt = data.getB_stt();
+            return StringUtils.hasText(bStt) && bStt.equals("계속사업자");
+         }
+         System.out.println(response);
+      } catch (URISyntaxException e) {
+         e.printStackTrace();
+      }
+
+      return false;
+
+   }
+}
+```
+
+## 구현 함수 동작 테스트
+
+> test/java/.../business/ApiTest.java
+
+```java
+@TestPropertySource(properties = "spring.profiles.active=dev")
+public class ApiTest {
+
+    @Autowired
+    private Utils utils;
+    
+   ...
+
+   @Test
+   @DisplayName("사업자 등록증 상태 체크 함수 테스트")
+   void checkBusinessPermit() {
+      boolean result = utils.checkBusinessPermit("2208657343");
+
+      assertTrue(result);
+
+   }
+}
+```
+
+
+> api/controllers/PublicApiController.java
+
+```java
+package org.choongang.api.controllers;
+
+import lombok.RequiredArgsConstructor;
+import org.choongang.commons.Utils;
+import org.choongang.commons.rests.JSONData;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/public")
+@RequiredArgsConstructor
+public class PublicApiController {
+    private final Utils utils;
+
+    @GetMapping("/business_permit/{permitNo}")
+    public JSONData<Object> checkBusinessPermit(@PathVariable("permitNo") String permitNo) {
+        boolean result = utils.checkBusinessPermit(permitNo);
+
+        JSONData<Object> data = new JSONData<>();
+        data.setSuccess(result); // true이면 유효 사업자
+
+        return data;
+    }
+}
+```
+
+## 사용방법
+- GET /api/public/business_permit/<사업자 번호>
+
+- 정상적인 사업자라면 다음과 같은 출력화면 확인 가능
+
+![image3](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/business/images/business/image3.png)
