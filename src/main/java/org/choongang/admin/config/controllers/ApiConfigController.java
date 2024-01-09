@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.List;
 
 @Controller
-@RequestMapping("/admin/config")
+@RequestMapping("/admin/config/api")
 @RequiredArgsConstructor
-public class BasicConfigController implements ExceptionProcessor {
+public class ApiConfigController  implements ExceptionProcessor {
 
     private final ConfigSaveService saveService;
     private final ConfigInfoService infoService;
@@ -30,7 +30,7 @@ public class BasicConfigController implements ExceptionProcessor {
 
     @ModelAttribute("subMenuCode")
     public String getSubMenuCode() {
-        return "basic";
+        return "api";
     }
 
     @ModelAttribute("subMenus")
@@ -40,26 +40,27 @@ public class BasicConfigController implements ExceptionProcessor {
 
     @ModelAttribute("pageTitle")
     public String getPageTitle() {
-        return "기본설정";
+        return "API 설정";
     }
 
     @GetMapping
     public String index(Model model) {
 
-        BasicConfig config = infoService.get("basic", BasicConfig.class).orElseGet(BasicConfig::new);
+        ApiConfig config = infoService.get("apiConfig", ApiConfig.class).orElseGet(ApiConfig::new);
 
-        model.addAttribute("basicConfig", config);
+        model.addAttribute("apiConfig", config);
 
-        return "admin/config/basic";
+        return "admin/config/api";
     }
 
     @PostMapping
-    public String save(BasicConfig config, Model model) {
+    public String save(ApiConfig config, Model model) {
 
-        saveService.save("basic", config);
+        saveService.save("apiConfig", config);
 
         model.addAttribute("message", "저장되었습니다.");
 
-        return "admin/config/basic";
+        return "admin/config/api";
     }
+
 }
