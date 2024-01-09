@@ -213,5 +213,40 @@ public class ApiConfigController  implements ExceptionProcessor {
 }
 ```
 
+> resources/template/admin/config/api.html
+
+```html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/layouts/main}">
+
+<section layout:fragment="content">
+    <div th:replace="~{admin/commons/_message::message}"></div>
+    <h1>API 설정</h1>
+
+    <form name="frmSave" method="post" th:action="@{/admin/config/api}" autocomplete="off" th:object="${apiConfig}">
+        <h2>공공 API 설정</h2>
+        <table class="table_cols">
+            <tr>
+                <th width="180">인증키(Encoding></th>
+                <td>
+                    <input type="text" name="publicOpenApiKey" th:field="*{publicOpenApiKey}">
+                </td>
+            </tr>
+        </table>
+        <div class="submit_btns">
+            <button type="reset" class="btn">다시입력</button>
+            <button type="submit" class="btn">저장하기</button>
+        </div>
+    </form>
+</section>
+</html>
+```
+
 관리자 완성 화면
 
+![image2](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/business/images/business/image2.png)
+
+
+## 사업자 상태 조회 서비스 개발
