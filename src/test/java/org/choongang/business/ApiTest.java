@@ -1,45 +1,3 @@
-# 사업자 등록번호 검증
-
-## 공공 데이터 OpenAPI
-
-1. [접속 주소](https://www.data.go.kr/data/15081808/openapi.do)(https://www.data.go.kr/data/15081808/openapi.do)
-2. API 서비스 신청하기 
-    - 활용신청 버튼 클릭
-    - 회원가입 필요
-    - 서비스 인증키 발급 받기 
-      - 일반 인증키(Encoding), 일반 인증키(Decoding)
-
-
-## 사업자등록정보 진위확인 API
-
-- 요청  URL : POST https://api.odcloud.kr/api/nts-businessman/v1/validate?serviceKey=서비스키
-
-
-- 요청 데이터(application/json)
-
-```json
-{
-   "b_no": ["xxxxxxx"] // 사업자번호 "xxxxxxx" 로 조회 시,
-}
-```
-
-## 사업자등록 상태조회 API 
-
-- 요청  URL : POST https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=서비스키
-
-
-- 요청 데이터(application/json)
-
-```json
-{
-   "b_no": ["xxxxxxx"] // 사업자번호 "xxxxxxx" 로 조회 시,
-}
-```
-
-
-## API 테스트 
-
-```java
 package org.choongang.business;
 
 import org.junit.jupiter.api.DisplayName;
@@ -63,7 +21,7 @@ public class ApiTest {
     @DisplayName("사업자등록정보 진위확인 API 테스트")
     void validateApiTest() throws URISyntaxException {
 
-        String url = "https://api.odcloud.kr/api/nts-businessman/v1/validate?serviceKey=일반 인증키(Encoding)";
+        String url = "https://api.odcloud.kr/api/nts-businessman/v1/validate?serviceKey=CHrWrFoNSLs09ec0iaNNKpj3VuYnP%2BJA5WAtHyPqdDVCdF%2Fn1NB46%2Bfd2NDjlTiNm%2Fw48BE9guQbOo12k2a6wA%3D%3D";
 
         RestTemplate restTemplate = new RestTemplate();
 
@@ -82,7 +40,7 @@ public class ApiTest {
     @DisplayName("사업자등록 상태 확인 API 테스트")
     void statusApiTest() throws URISyntaxException {
 
-        String url = "https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=일반 인증키(Encoding)";
+        String url = "https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=CHrWrFoNSLs09ec0iaNNKpj3VuYnP%2BJA5WAtHyPqdDVCdF%2Fn1NB46%2Bfd2NDjlTiNm%2Fw48BE9guQbOo12k2a6wA%3D%3D";
 
         RestTemplate restTemplate = new RestTemplate();
 
@@ -97,11 +55,3 @@ public class ApiTest {
         System.out.println(body);
     }
 }
-
-```
-
-다음과 같이 데이터가 나온다면 API 계정에 문제 없음
-
-```json
-{"request_cnt":1,"match_cnt":1,"status_code":"OK","data":[{"b_no":"2208657343","b_stt":"계속사업자","b_stt_cd":"01","tax_type":"부가가치세 일반과세자","tax_type_cd":"01","end_dt":"","utcc_yn":"N","tax_type_change_dt":"","invoice_apply_dt":"","rbf_tax_type":"해당없음","rbf_tax_type_cd":"99"}]}
-```
