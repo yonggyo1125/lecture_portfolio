@@ -160,7 +160,6 @@ public class JoinService {
 > 1. search_address 클래스가 지정되어 있으면 클릭시 주소 팝업이 뜹니다.
 > 2. data-zonecode-id : 여기에 지정된 id를 가진 input 요소에 검색된 우편번호가 완성됩니다.
 > 3. data-address-id : 여기에 지정된 id를 가진 input 요소에 검색된 주소가 완성됩니다.
-> 4. data-address-sub-id : 여기에 지정된 id를 가진 input 요소에 검색된 나머지 주소가 완성됩니다.
 
 > resources/static/common/js/address.js
 
