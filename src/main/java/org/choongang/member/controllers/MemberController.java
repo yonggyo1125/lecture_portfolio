@@ -111,6 +111,7 @@ public class MemberController implements ExceptionProcessor {
 
         List<String> addCss = new ArrayList<>();
         List<String> addScript = new ArrayList<>();
+        List<String> addCommonScript = new ArrayList<>();
 
         if (mode.equals("login")) { // 로그인
             pageTitle = Utils.getMessage("로그인", "commons");
@@ -118,6 +119,7 @@ public class MemberController implements ExceptionProcessor {
         } else if (mode.equals("join")) { // 회원가입
             addCss.add("member/join");
             addScript.add("member/join");
+            addCommonScript.add("address");
 
         } else if (mode.equals("find_pw")) { // 비밀번호 찾기
             pageTitle = Utils.getMessage("비밀번호_찾기", "commons");
@@ -126,5 +128,6 @@ public class MemberController implements ExceptionProcessor {
         model.addAttribute("pageTitle", pageTitle);
         model.addAttribute("addCss", addCss);
         model.addAttribute("addScript", addScript);
+        model.addAttribute("addCommonScript", addCommonScript);
     }
 }

@@ -25,6 +25,10 @@ public class RequestJoin {
     @NotBlank
     private String name;
 
+    private String zonecode;
+    private String address;
+    private String addressSub;
+
     @AssertTrue
     private boolean agree;
 
