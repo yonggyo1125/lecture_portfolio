@@ -39,6 +39,10 @@ public class JoinService {
         member.setPassword(hash);
         member.setUserId(form.getUserId());
 
+        member.setZonecode(form.getZonecode());
+        member.setAddress(form.getAddress());
+        member.setAddressSub(form.getAddressSub());
+
         process(member);
 
         // 회원 가입시에는 일반 사용자 권한 부여(USER)

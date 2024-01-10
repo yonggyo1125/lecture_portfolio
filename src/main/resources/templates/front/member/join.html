@@ -62,6 +62,21 @@
                 <div class="error" th:each="err : ${#fields.errors('name')}" th:text="${err}"></div>
             </dd>
         </dl>
+        <dl>
+            <dt th:text="#{주소}"></dt>
+            <dd>
+                <div>
+                    <input type="text" name="zonecode" id="zonecode" th:field="*{zonecode}" readonly th:placeholder="#{우편번호}">
+                    <button type="button" th:text="#{주소_찾기}" class="search_address" data-zonecode-id="zonecode" data-address-id="address"></button>
+                </div>
+                <div>
+                    <input type="text" name="address" id="address" th:field="*{address}" readonly th:placeholder="#{주소}">
+                </div>
+                <div>
+                    <input type="text" name="addressSub" th:field="*{addressSub}" th:placeholder="#{나머지_주소}">
+                </div>
+            </dd>
+        </dl>
 
         <div th:text="#{회원가입_약관}"></div>
         <div class="terms" th:utext="${@utils.nl2br(siteConfig.joinTerms)}"></div>
