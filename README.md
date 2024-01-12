@@ -28,7 +28,7 @@
 ## 기타
 
 - [탭 형태 내용 치환(ajax)](https://github.com/yonggyo1125/lecture_portfolio/blob/tab/TAB.md)
-- 카카오맵 연동
+- 카카오맵 API
 - [사업자 등록번호 검증](https://github.com/yonggyo1125/lecture_portfolio/blob/business/BUSINESS_PERMIT.md)
 - [주소 API 연동](https://github.com/yonggyo1125/lecture_portfolio/blob/address-api/ADDRESS_API.md)
 - [달력]()
