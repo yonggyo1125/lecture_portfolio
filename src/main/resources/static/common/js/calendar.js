@@ -23,6 +23,12 @@ window.addEventListener("DOMContentLoaded", function() {
                 const targetEl = parent.document.getElementById(targetId);
                 if (targetEl) targetEl.value = date;
             }
+
+            /* 달력 팝업 닫기 */
+            if (parent.commonLib && typeof parent.commonLib.popup  != 'undefined' ) {
+                const { popup } = parent.commonLib;
+                popup.close();
+            }
         });
     }
     /* 달력 클릭 이벤트 처리 E */

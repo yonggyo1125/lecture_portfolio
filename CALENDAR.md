@@ -279,6 +279,38 @@ main { padding: 15px; }
 </html>
 ```
 
+> resources/templates/mobile/calendar/index.html
+
+```html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{mobile/layouts/popup}">
+<main layout:fragment="content" class="popup_calendar">
+    <div class="year_month">
+        <a th:href="@{/calendar(year=${prevYear}, month=${prevMonth}, targetId=${param.targetId})}" th:text="#{이전달}"></a>
+        <span class="current">
+            <th:block th:text="${year}"></th:block>
+            <th:block th:text="#{년}"></th:block>
+
+            <th:block th:text="${#numbers.formatInteger(month, 2)}"></th:block>
+            <th:block th:text="#{월}"></th:block>
+        </span>
+        <a th:href="@{/calendar(year=${nextYear}, month=${nextMonth}, targetId=${param.targetId})}" th:text="#{다음달}"></a>
+    </div>
+    <ul class="yoils">
+        <li th:each="yoil, status : ${yoilTitles}" th:text="${yoil}"></li>
+    </ul>
+    <ul class="days">
+        <li th:each="day, status : ${days}">
+            <div th:text="${day}" class="day" th:data-date="${dates[status.index]}"></div>
+        </li>
+    </ul>
+</main>
+</html>
+```
+
+
 > static/common/js/calendar.js
 
 > 선택한 날짜(예 - 2024-01-13)를 가지고 처리할 작업이 많은 경우 callback 함수 정의 
@@ -315,6 +347,12 @@ window.addEventListener("DOMContentLoaded", function() {
                 const targetEl = parent.document.getElementById(targetId);
                 if (targetEl) targetEl.value = date;
             }
+
+            /* 달력 팝업 닫기 */
+            if (parent.commonLib && typeof parent.commonLib.popup  != 'undefined' ) {
+                const { popup } = parent.commonLib;
+                popup.close();
+            }
         });
     }
     /* 달력 클릭 이벤트 처리 E */
@@ -345,8 +383,57 @@ function callbackCalendar(date) {
 } 
 ```
 
+> test/TestController.java  
 
+```java
+package org.choongang.test;
+
+import lombok.RequiredArgsConstructor;
+import org.choongang.commons.ExceptionProcessor;
+import org.choongang.commons.Utils;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@RequestMapping("/test")
+@RequiredArgsConstructor
+public class TestController implements ExceptionProcessor {
+
+    private final Utils utils;
+
+    @GetMapping("/popup")
+    public String popupTest() {
+
+        return utils.tpl("test/popup");
+    }
+}
+```
+
+> resources/templates/front/test/popup.html
+
+```html 
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{front/layouts/main}">
+<main layout:fragment="content">
+
+    <input type="text" id="sdate">
+
+    <script>
+        const { popup } = commonLib;
+        const sdate = document.getElementById("sdate");
+        sdate.onfocus = () => popup.open('/calendar?targetId=sdate', 350, 400);
+    </script>
+</main>
+</html>
+```
 
 완성 달력 화면 
 
 ![image1](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/calendar/images/calendar/image1.png)
+
+적용 예시 
+
+![image2](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/calendar/images/calendar/image1.png)
