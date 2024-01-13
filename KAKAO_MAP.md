@@ -18,5 +18,43 @@
 
 > 개발 서버에서 접속할땐 http://localhost:3000 과 같이 사이트 도메인을 등록해도 되나 실 서비스 서버에서는 실제 도메인이 필요합니다. 카카오 맵을 연동하는 조는 도메인 하나를 구입하고 강사에게 연결 요청을 해주시면 됩니다.
 
+## 기본 설정 - API 설정
+
+> 카카오 API 앱키 추가 
+> 
+> admin/config/controllers/ApiConfig.java
+
+```java
+...
+
+public class ApiConfig {
+    private String publicOpenApiKey; // 공공 API 인증키
+
+    private String kakaoJavascriptKey; // 카카오 API - 자바스크립트 앱 키
+}
+```
+
+> resources/templates/admin/config/api.html
+
+```html
+<form name="frmSave" method="post" th:action="@{/admin/config/api}" autocomplete="off" th:object="${apiConfig}">
+    <h2>공공 API 설정</h2>
+    ...
+
+    <h2>카카오 API 앱키</h2>
+    <table class="table_cols">
+        <tr>
+            <th width="180">Javascript 키</th>
+            <td>
+                <input type="text" name="kakaoJavascriptKey" th:field="*{kakaoJavascriptKey}">
+            </td>
+        </tr>
+    </table>
+    
+    ...
+    
+</form>
+```
+
 
 

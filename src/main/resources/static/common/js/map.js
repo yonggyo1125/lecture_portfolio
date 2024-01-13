@@ -11,35 +11,23 @@ commonLib.map = {
     * @param height : 지도 높이 - 숫자로 입력된 경우 px 단위
     */
     load(mapId, width, height) {
-        /* map sdk.js 동적 로드 S */
-        const el = document.getElementById("kakao_api_script");
-        if (el) {
-            el.parentElement.removeChild(el);
-        }
+        return new Promise((resolve, reject) => {
+            /* map sdk.js 동적 로드 S */
+            const url =`//dapi.kakao.com/v2/maps/sdk.js?appkey=${commonLib.map.appKey}&autoload=false`;
 
-        const script = document.createElement("script");
-        script.src=`//dapi.kakao.com/v2/maps/sdk.js?appkey=${commonLib.map.appKey}&autoload=false`;
-        script.id="kakao_api_script";
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", url)
+            xhr.send(null);
 
-        document.head.insertBefore(script, document.getElementsByTagName("script")[0]);
+            xhr.onreadystatechange = function() {
+                if (xhr.status == 200 && xhr.readyState == XMLHttpRequest.DONE) {
+                    console.log(Kakao);
+                }
+            };
+        });
         /* map sdk.js 동적 로드 E */
 
 
-        script.addEventListener("load", function() {
-            const mapContainer = document.getElementById(mapId);
-            width = typeof width == 'number' ? `${width}px` : width;
-            height = typeof height == 'number' ? `${height}px` : height;
-
-            mapContainer.style.width = width;
-            mapContainer.style.height = height;
-
-            const mapOption = {
-                center: new kakao.maps.LatLng(33.450701, 126.570667), // 지도의 중심좌표
-                level: 3 // 지도의 확대 레벨
-            };
-
-            const map = new kakao.maps.Map(mapContainer, mapOption); // 지도를 생성합니다
-       });
     }
 };
 
