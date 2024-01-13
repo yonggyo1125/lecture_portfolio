@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{front/layouts/main}">
+<main layout:fragment="content">
+
+    <input type="text" id="sdate">
+
+    <script>
+        const { popup } = commonLib;
+        const sdate = document.getElementById("sdate");
+        sdate.onfocus = () => popup.open('/calendar?targetId=sdate', 350, 400);
+    </script>
+</main>
+</html>
