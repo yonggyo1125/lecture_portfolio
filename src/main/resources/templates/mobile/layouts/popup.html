@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="_csrf" th:content="${_csrf.token}">
     <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, minimum-scale=0.5, maximum-scale=3.0">
     <meta th:if="${siteConfig.siteDescription != null}" name="description" th:content="${siteConfig.siteDescription}">
     <meta th:if="${siteConfig.siteKeywords != null}" name="keywords" th:content="${siteConfig.siteKeywords}">
     <title>
@@ -17,10 +18,10 @@
           th:each="cssFile : ${addCommonCss}"
           th:href="@{/common/css/{file}.css?v={v}(file=${cssFile}, v=${siteConfig.cssJsVersion})}">
 
-    <link rel="stylesheet" type="text/css" th:href="@{/front/css/popup_style.css?v={v}(v=${siteConfig.cssJsVersion})}">
+    <link rel="stylesheet" type="text/css" th:href="@{/mobile/css/popup_style.css?v={v}(v=${siteConfig.cssJsVersion})}">
     <link rel="stylesheet" type="text/css"
           th:each="cssFile : ${addCss}"
-          th:href="@{/front/css/{file}.css?v={v}(file=${cssFile}, v=${siteConfig.cssJsVersion})}">
+          th:href="@{/mobile/css/{file}.css?v={v}(file=${cssFile}, v=${siteConfig.cssJsVersion})}">
 
     <th:block layout:fragment="addCss"></th:block>
 
@@ -28,9 +29,9 @@
     <script th:each="jsFile : ${addCommonScript}"
             th:src="@{/common/js/{file}.js?v={v}(file=${jsFile}, v=${siteConfig.cssJsVersion})}"></script>
 
-    <script th:src="@{/front/js/common.js?v={v}(v=${siteConfig.cssJsVersion})}"></script>
+    <script th:src="@{/mobile/js/common.js?v={v}(v=${siteConfig.cssJsVersion})}"></script>
     <script th:each="jsFile : ${addScript}"
-            th:src="@{/front/js/{file}.js?v={v}(file=${jsFile}, v=${siteConfig.cssJsVersion})}"></script>
+            th:src="@{/mobile/js/{file}.js?v={v}(file=${jsFile}, v=${siteConfig.cssJsVersion})}"></script>
 
     <th:block layout:fragment="addScript"></th:block>
 </head>
