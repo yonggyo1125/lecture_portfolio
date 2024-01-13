@@ -2,7 +2,11 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{front/layouts/main}">
+<th:block layout:fragment="addCommonScript">
+    <th:block th:replace="~{common/_kakao_map_script::script}"></th:block>
+</th:block>
 <main layout:fragment="content">
+
     <div id="map"></div>
 </main>
 </html>

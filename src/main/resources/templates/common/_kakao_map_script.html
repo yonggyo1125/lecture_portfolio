@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
     <th:block th:fragment="script">
-        <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=${commonLib.map.appKey}"></script>
+        <script th:src="${#strings.concat('//dapi.kakao.com/v2/maps/sdk.js?appkey=', @utils.getApiConfig('kakaoJavascriptKey'))}"></script>
     </th:block>
 </html>

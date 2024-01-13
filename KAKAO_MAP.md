@@ -56,5 +56,65 @@ public class ApiConfig {
 </form>
 ```
 
+![image1](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/kakao-map/images/map/image1.png)
 
+
+> commons/Utils.java
+
+```java
+
+...
+
+public class Utils {
+    
+    ...
+
+    /**
+     * API 설정 조회
+     *
+     * @param key
+     * @return
+     * 
+     */
+    public String getApiConfig(String key) {
+        Map<String, String> config = infoService.get("apiConfig", new TypeReference<Map<String, String>>() {
+        }).orElse(null);
+        if (config == null) return "";
+
+        return config.getOrDefault(key, "");
+    }
+}
+```
+
+## 카카오 맵 자뱌스크립트 sdk.js 추가 
+
+> resources/templates/common/_execute_script.html
+
+```html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="script">
+    <script th:src="${#strings.concat('//dapi.kakao.com/v2/maps/sdk.js?appkey=', @utils.getApiConfig('kakaoJavascriptKey'))}"></script>
+</th:block>
+</html>
+```
+
+> resources/templates/admin/layouts/main.html 
+>
+> resources/templates/front/layouts/main.html
+> 
+> resources/templates/mobile/layouts/main.html
+
+```html
+...
+
+    <th:block layout:fragment="addCss"></th:block>
+
+    <th:block layout:fragment="addCommonScript"></th:block>
+
+    <script th:src="@{/common/js/common.js?v={v}(v=${siteConfig.cssJsVersion})}"></script>
+
+...
+
+```
 

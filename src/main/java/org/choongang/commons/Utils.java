@@ -1,5 +1,6 @@
 package org.choongang.commons;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -214,5 +215,19 @@ public class Utils {
 
         return false;
 
+    }
+
+    /**
+     * API 설정 조회
+     *
+     * @param key
+     * @return
+     */
+    public String getApiConfig(String key) {
+        Map<String, String> config = infoService.get("apiConfig", new TypeReference<Map<String, String>>() {
+        }).orElse(null);
+        if (config == null) return "";
+
+        return config.getOrDefault(key, "");
     }
 }
