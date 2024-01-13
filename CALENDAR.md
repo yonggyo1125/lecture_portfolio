@@ -436,4 +436,4 @@ public class TestController implements ExceptionProcessor {
 
 적용 예시 
 
-![image2](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/calendar/images/calendar/image1.png)
+![image2](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/calendar/images/calendar/image2.png)
