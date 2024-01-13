@@ -75,6 +75,9 @@ public class SecurityConfig {
         });
         /* 자동 로그인 설정 E */
 
+        /* 같은 서버 자원 주소는 iframe 허용 처리 */
+        http.headers(c -> c.frameOptions(f -> f.sameOrigin()));
+
         return http.build();
     }
 
