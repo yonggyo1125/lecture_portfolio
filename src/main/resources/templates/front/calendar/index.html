@@ -2,9 +2,9 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{front/layouts/popup}">
-<main layout:fragment="content">
+<main layout:fragment="content" class="popup_calendar">
 <div class="year_month">
-    <a th:href="@{/calendar(year=${prevYear}, month=${prevMonth})}" th:text="#{이전달}"></a>
+    <a th:href="@{/calendar(year=${prevYear}, month=${prevMonth}, targetId=${param.targetId})}" th:text="#{이전달}"></a>
     <span class="current">
             <th:block th:text="${year}"></th:block>
             <th:block th:text="#{년}"></th:block>
@@ -12,14 +12,14 @@
             <th:block th:text="${#numbers.formatInteger(month, 2)}"></th:block>
             <th:block th:text="#{월}"></th:block>
         </span>
-    <a th:href="@{/calendar(year=${nextYear}, month=${nextMonth})}" th:text="#{다음달}"></a>
+    <a th:href="@{/calendar(year=${nextYear}, month=${nextMonth}, targetId=${param.targetId})}" th:text="#{다음달}"></a>
 </div>
 <ul class="yoils">
     <li th:each="yoil, status : ${yoilTitles}" th:text="${yoil}"></li>
 </ul>
 <ul class="days">
     <li th:each="day, status : ${days}">
-        <span th:text="${day}" class="day" th:data-date="${dates[status.index]}"></span>
+        <div th:text="${day}" class="day" th:data-date="${dates[status.index]}"></div>
     </li>
 </ul>
 </main>
