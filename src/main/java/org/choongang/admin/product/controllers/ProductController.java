@@ -7,6 +7,7 @@ import org.choongang.admin.menus.MenuDetail;
 import org.choongang.commons.ExceptionProcessor;
 import org.choongang.commons.Utils;
 import org.choongang.commons.exceptions.AlertException;
+import org.choongang.product.constants.ProductStatus;
 import org.choongang.product.entities.Category;
 import org.choongang.product.service.CategoryDeleteService;
 import org.choongang.product.service.CategoryInfoService;
@@ -41,6 +42,12 @@ public class ProductController implements ExceptionProcessor {
         return Menu.getMenus("product");
     }
 
+    /* 상품 상태 목록 */
+    @ModelAttribute("productStatuses")
+    public List<String[]> getProductStatuses() {
+        return ProductStatus.getList();
+    }
+
     /**
      * 상품 목록
      *
@@ -60,7 +67,7 @@ public class ProductController implements ExceptionProcessor {
      * @return
      */
     @GetMapping("/add")
-    public String add(Model model) {
+    public String add(@ModelAttribute RequestProduct form, Model model) {
         commonProcess("add", model);
 
         return "admin/product/add";
@@ -74,7 +81,13 @@ public class ProductController implements ExceptionProcessor {
      * @return
      */
     @PostMapping("/save")
-    public String save(Model model) {
+    public String save(RequestProduct form, Errors errors, Model model) {
+        String mode = form.getMode();
+        commonProcess(mode, model);
+
+        if (errors.hasErrors()) {
+            return "admin/product/" + mode;
+        }
 
         return "redirect:/admin/product";
     }

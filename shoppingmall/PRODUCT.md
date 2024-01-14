@@ -745,6 +745,17 @@ public class Utils {
 
 ## 상품 등록 
 
+> resources/messages/commons.properties
+
+```properties
+...
+
+# 상품 상태
+ProductStatus.SALE=판매중
+ProductStatus.OUT_OF_STOCK=품절
+ProductStatus.PREPARE=상품준비중
+```
+
 > product/constants/DiscountType.java : 할인 방식 - 퍼센트, 고정금액 
 
 ```java
@@ -769,14 +780,43 @@ public enum DiscountType {
 >상품이 품절 상태이라면 재고사용 중이고 재고가 남아 있어도 품절로 처리 
 
 ```java
+package org.choongang.product.constants;
+
+import org.choongang.commons.Utils;
+
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * 상품 상태
  *
  */
 public enum ProductStatus {
-    SALE, // 판매중
-    OUT_OF_STOCK, // 품절
-    PREPARE, // 상품 준비중
+    SALE(Utils.getMessage("ProductStatus.SALE", "commons")), // 판매중
+    OUT_OF_STOCK(Utils.getMessage("ProductStatus.OUT_OF_STOCK", "commons")), // 품절
+    PREPARE(Utils.getMessage("ProductStatus.PREPARE", "commons")); // 상품 준비중
+
+    private final String title;
+
+    ProductStatus(String title) {
+        this.title = title;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    /**
+     * 상품 상태 목록 : 0 - 상수 문자열, 1 - 한글 문자열
+     * @return
+     */
+    public static List<String[]> getList() {
+        return Arrays.asList(
+                new String[] {SALE.name(), SALE.title},
+                new String[] {OUT_OF_STOCK.name(), OUT_OF_STOCK.title},
+                new String[] {PREPARE.name(), PREPARE.title}
+        );
+    }
 }
 ```
 
@@ -934,5 +974,126 @@ public interface ProductOptionRepository extends JpaRepository<ProductOption, Lo
 
 }
 ```
+
+## 관리자 페이지 - 상품 등록 양식 구성 
+
+> admin/product/controllers/RequestProduct.java
+
+```java
+package org.choongang.admin.product.controllers;
+
+import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
+import org.choongang.file.entities.FileInfo;
+import org.choongang.product.constants.DiscountType;
+import org.choongang.product.constants.ProductStatus;
+
+import java.util.List;
+import java.util.UUID;
+
+@Data
+public class RequestProduct {
+
+    private String mode = "add";
+
+    private Long seq; // 상품 번호
+
+    private String gid = UUID.randomUUID().toString(); // 그룹 ID
+
+    @NotBlank
+    private String cateCd; // 분류 코드
+
+    @NotBlank
+    private String name; // 상품명
+
+    private int consumerPrice; // 소비자가(보이는 금액)
+    private int salePrice; // 판매가(결제 기준 금액)
+
+    private boolean useStock; // 재고 사용 여부 - true : 재고 차감
+    private int stock; // 옵션을 사용하지 않는 경우 단일 상품 재고, 0 - 무제한
+
+    private String discountType = DiscountType.PERCENT.name(); // 할인 종류 - PERCENT, PRICE
+    private int discount; // 할인 금액
+
+    private String extraInfo; // 상품 추가 정보 : JSON 문자열로 저장 - 양식에서는 hidden 값으로 업데이트 처리
+
+    private boolean packageDelivery; // 같은 판매자별 묶음 배송 여부
+    private int deliveryPrice; // 배송비, 0이면 무료 배송
+
+    private String description; // 상품 상세 설명
+
+    private boolean active; // 노출 여부 : true -> 소비자 페이지 노출
+
+    private String status = ProductStatus.PREPARE.name(); // 상품 상태 - 상품 준비중이 기본 상태
+
+    private boolean useOption; // 옵션 사용 여부, true : 옵션 사용, 재고는 옵션쪽 재고 사용
+
+    private String optionName; // 옵션명
+
+    private List<FileInfo> mainImages; // 메인 이미지
+
+    private List<FileInfo> listImages; // 목록 이미지
+
+    private List<FileInfo> editorImages; // 에디터에 첨부한 이미지
+}
+```
+
+> admin/product/controllers/ProductController.java
+
+```java
+
+... 
+
+public class ProductController implements ExceptionProcessor {
+    ...
+    
+    @ModelAttribute("subMenus")
+    public List<MenuDetail> getSubMenus() {
+        return Menu.getMenus("product");
+    }
+
+    /* 상품 상태 목록 */
+    @ModelAttribute("productStatuses")
+    public List<String[]> getProductStatuses() {
+        return ProductStatus.getList();
+    }
+    
+    ...
+
+    /**
+     * 상품 등록
+     *
+     * @param model
+     * @return
+     */
+    @GetMapping("/add")
+    public String add(@ModelAttribute RequestProduct form, Model model) {
+        commonProcess("add", model);
+
+        return "admin/product/add";
+    }
+
+
+    /**
+     * 상품 등록, 수정 처리
+     *
+     * @param model
+     * @return
+     */
+    @PostMapping("/save")
+    public String save(RequestProduct form, Errors errors, Model model) {
+        String mode = form.getMode();
+        commonProcess(mode, model);
+
+        if (errors.hasErrors()) {
+            return "admin/product/" + mode;
+        }
+
+        return "redirect:/admin/product";
+    }
+}
+```
+
+
 
 ## 상품 수정
