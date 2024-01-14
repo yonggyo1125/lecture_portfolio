@@ -214,7 +214,9 @@ public class CSVUtilsTest {
 
 - toList()로 생성한 데이터 화면
 
+![image1](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/master/images/csv/image1.png)
 
 
 - toFile("data/branch.sql") 로 생성한 data/branch.sql 파일 내용
 
+![image2](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/master/images/csv/image2.png)
