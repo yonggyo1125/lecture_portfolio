@@ -132,6 +132,7 @@ public class ProductController implements ExceptionProcessor {
     public String categoryEdit(@RequestParam("chk") List<Integer> chks, Model model) {
         commonProcess("category", model);
 
+        categorySaveService.saveList(chks);
 
         // 수정 완료 -> 목록 갱신
         model.addAttribute("script", "parent.location.reload()");

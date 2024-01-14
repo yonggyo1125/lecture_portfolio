@@ -241,4 +241,18 @@ public class Utils {
 
         return config.getOrDefault(key, "");
     }
+
+    /**
+     * 요청 데이터 가져오기 편의 함수
+     *
+     * @param name
+     * @return
+     */
+    public String getParam(String name) {
+        return request.getParameter(name);
+    }
+
+    public String[] getParams(String name) {
+        return request.getParameterValues(name);
+    }
 }

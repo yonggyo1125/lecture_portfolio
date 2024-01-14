@@ -484,10 +484,10 @@ public class ProductController implements ExceptionProcessor {
                     <input type="checkbox" class="checkall" data-target-name="chk" id="checkall">
                     <label for="checkall"></label>
                 </th>
-                <th width="200">분류코드</th>
-                <th width="300">분류명</th>
-                <th width="200">진열가중치</th>
-                <th width="200">사용여부</th>
+                <th width="180">분류코드</th>
+                <th width="200">분류명</th>
+                <th width="150">진열가중치</th>
+                <th width="180">사용여부</th>
                 <th></th>
             </tr>
             </thead>
@@ -506,11 +506,11 @@ public class ProductController implements ExceptionProcessor {
                     <input type="number" th:name="${'listOrder_' + status.index}" th:value="*{listOrder}">
                 </td>
                 <td align="center">
-                    <input type="radio" th:name="${'active_' + status.index}" th:checked="*{active}" th:id="${'active_' + status.index}" value="true">
-                    <label th:for="${'active_' + status.index}">사용</label>
+                    <input type="radio" th:name="${'active_' + status.index}" th:checked="*{active}" th:id="${'active_true_' + status.index}" value="true">
+                    <label th:for="${'active_true_' + status.index}">사용</label>
 
-                    <input type="radio" th:name="${'active_' + status.index}" th:checked="*{!active}" th:id="${'active_' + status.index}" value="false">
-                    <label th:for="${'active_' + status.index}">미사용</label>
+                    <input type="radio" th:name="${'active_' + status.index}" th:checked="*{!active}" th:id="${'active_false_' + status.index}" value="false">
+                    <label th:for="${'active_false_' + status.index}">미사용</label>
                 </td>
                 <td>
                     <a th:href="@{/admin/product?cateCd={cateCd}(cateCd=*{cateCd})}" class="sbtn">상품관리</a>
@@ -531,6 +531,19 @@ public class ProductController implements ExceptionProcessor {
 
 </section>
 </html>
+
+```
+
+> commons/Utils.java
+
+```java
+...
+
+public class Utils {
+    ...
+    
+    
+}
 ```
 
 ## 상품 등록 / 수정
