@@ -306,3 +306,5 @@ INSERT INTO CENTER_INFO (location,centerNm,centerType,address,tel ) VALUES ("울
 
 INSERT INTO CENTER_INFO (location,centerNm,centerType,address,tel ) VALUES ("울산","울산삼산동센터","국고","울산 남구 삼산로 275, 킴스메디컬빌딩 2층","052-266-5225");
 
+,centerType,address,tel ) VALUES ("울산","울산삼산동센터","국고","울산 남구 삼산로 275, 킴스메디컬빌딩 2층","052-266-5225");
+
