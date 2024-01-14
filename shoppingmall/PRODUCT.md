@@ -568,6 +568,35 @@ public class ProductController implements ExceptionProcessor {
 </html>
 ```
 
+> resources/templates/commons/_editor_file.html
+
+```html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<span th:fragment="item" th:if="${item != null}" th:object="${item}" class="file_tpl_box" th:id="*{'file_' + seq}">
+        <a th:href="@{/file/download/{seq}(seq=*{seq})}" th:text="*{fileName}"></a>
+        <i class="xi-upload insert_image" th:data-url="*{fileUrl}"></i>
+        <a th:href="@{/file/delete/{seq}(seq=*{seq})}" onclick="return confirm('정말 삭제하시겠습니까?');" class="remove" target="ifrmProcess">
+            <i class="xi-close"></i>
+        </a>
+    </span>
+</html>
+```
+
+> resources/templates/common/_image_file.html
+
+```html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="item" th:if="${item != null}" th:object="${item}" class="image1_tpl_box" th:id="*{'file_' + seq}">
+    <a th:href="@{/file/delete/{seq}(seq=*{seq})}" onclick="return confirm('정말 삭제하시겠습니까?');" class="remove" target="ifrmProcess">
+        <i class="xi-close"></i>
+    </a>
+    <div class="inner" th:style="${@utils.backgroundStyle(item)}"></div>
+</div>
+</html>
+```
+
 > resources/templates/product/add.html : 상품 등록 - 기초 구성 / 추후 상품 등록, 수정 구현시 코드 추가 예정
 
 ```html
@@ -737,6 +766,19 @@ public class Utils {
 
     public String[] getParams(String name) {
         return request.getParameterValues(name);
+    }
+
+    public String backgroundStyle(FileInfo file) {
+
+        String imageUrl = file.getFileUrl();
+        List<String> thumbsUrl = file.getThumbsUrl();
+        if (thumbsUrl != null && !thumbsUrl.isEmpty()) {
+            imageUrl = thumbsUrl.get(thumbsUrl.size() - 1);
+        }
+
+        String style = String.format("background:url('%s') no-repeat center center; background-size:cover;", imageUrl);
+
+        return style;
     }
 }
 ```
@@ -1066,6 +1108,12 @@ public class RequestProduct {
 public class ProductController implements ExceptionProcessor {
     ...
     
+    private final FileInfoService fileInfoService;
+    private final ProductSaveService productSaveService;
+    private final ProductInfoService productInfoService;
+    
+    ...
+    
     @ModelAttribute("subMenus")
     public List<MenuDetail> getSubMenus() {
         return Menu.getMenus("product");
@@ -1111,11 +1159,40 @@ public class ProductController implements ExceptionProcessor {
         commonProcess(mode, model);
 
         if (errors.hasErrors()) {
+
+            String gid = form.getGid();
+
+            form.setEditorImages(fileInfoService.getList(gid, "editor"));
+            form.setMainImages(fileInfoService.getList(gid, "main"));
+            form.setListImages(fileInfoService.getList(gid, "list"));
+
             return "admin/product/" + mode;
         }
 
+        productSaveService.save(form);
+
         return "redirect:/admin/product";
     }
+
+    /**
+     * 상품 정보 수정
+     *
+     * @param seq
+     * @param model
+     * @return
+     */
+    @GetMapping("/edit/{seq}")
+    public String edit(@PathVariable("seq") Long seq, Model model) {
+        commonProcess("edit", model);
+
+        RequestProduct form = productInfoService.getForm(seq);
+        model.addAttribute("requestProduct", form);
+
+        return "admin/product/edit";
+    }
+    
+    ...
+    
 }
 ```
 
@@ -1235,7 +1312,11 @@ public class ProductController implements ExceptionProcessor {
         <tr>
             <th width="180">메인이미지</th>
             <td>
-                <div class="uploaded_files" id="main_files"></div>
+                <div class="uploaded_files" id="main_files">
+                    <th:block th:each="item : *{mainImages}">
+                        <span th:replace="~{common/_image_file::item}"></span>
+                    </th:block>
+                </div>
                 <button type="button" class="sbtn upload_files" data-location="main" data-image-only="true">
                     <i class="xi-image"></i>
                     이미지 추가
@@ -1245,7 +1326,11 @@ public class ProductController implements ExceptionProcessor {
         <tr>
             <th width="180">목록이미지</th>
             <td>
-                <div class="uploaded_files" id="list_files"></div>
+                <div class="uploaded_files" id="list_files">
+                    <th:block th:each="item : *{listImages}">
+                        <span th:replace="~{common/_image_file::item}"></span>
+                    </th:block>
+                </div>
                 <button type="button" class="sbtn upload_files" data-location="list" data-image-only="true" data-single-file="true">
                     <i class="xi-image"></i>
                     이미지 추가
@@ -1297,7 +1382,11 @@ public class ProductController implements ExceptionProcessor {
         <i class="xi-image"></i>
         이미지 추가
     </button>
-    <div class="uploaded_files" id="editor_files"></div>
+    <div class="uploaded_files" id="editor_files">
+        <th:block th:each="item : *{editorImages}">
+            <span th:replace="~{common/_editor_file::item}"></span>
+        </th:block>
+    </div>
     <script th:replace="~{common/_file_tpl::image1_tpl}"></script>
     <script th:replace="~{common/_file_tpl::editor_tpl}"></script>
 </th:block>
@@ -1401,6 +1490,13 @@ function callbackFileDelete(seq) {
 }
 ```
 
+> resources/templates/admin/product/list.html
+
+```html
+
+```
+
+
 ### 서비스 구현 
 
 > product/service/ProductNotFoundException.java
@@ -1493,16 +1589,246 @@ public class ProductSaveService {
 }
 ```
 
+> product/controllers/ProductSearch.java 
+
+```java
+package org.choongang.product.controllers;
+
+import lombok.Data;
+
+import java.time.LocalDate;
+import java.util.List;
+
+@Data
+public class ProductSearch {
+    private int page = 1;
+    private int limit = 20;
+
+    private List<String> cateCd; // 카테고리 검색
+    private List<Long> seq; // 상품 번호
+    private String name; // 상품 명
+
+    private List<String> statuses; // 상품 상태
+
+    private LocalDate sdate; // 날짜 검색 시작
+    private LocalDate edate; // 날짜 검색 종료
+}
+```
+
 > product/service/ProductInfoService.java
 
 ```java
+package org.choongang.product.service;
 
+import com.querydsl.core.BooleanBuilder;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import org.choongang.admin.product.controllers.RequestProduct;
+import org.choongang.commons.ListData;
+import org.choongang.commons.Pagination;
+import org.choongang.commons.Utils;
+import org.choongang.file.entities.FileInfo;
+import org.choongang.file.service.FileInfoService;
+import org.choongang.product.constants.ProductStatus;
+import org.choongang.product.controllers.ProductSearch;
+import org.choongang.product.entities.Category;
+import org.choongang.product.entities.Product;
+import org.choongang.product.entities.QProduct;
+import org.choongang.product.repositories.ProductRepository;
+import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
+
+import static org.springframework.data.domain.Sort.Order.desc;
+
+@Service
+@RequiredArgsConstructor
+public class ProductInfoService {
+
+    private final ProductRepository productRepository;
+    private final FileInfoService fileInfoService;
+    private final HttpServletRequest request;
+
+    /**
+     * 상품 개별 조회
+     *
+     * @param seq : 상품 번호
+     * @return
+     */
+    public Product get(Long seq) {
+        Product product = productRepository.findById(seq).orElseThrow(ProductNotFoundException::new);
+
+        addProductInfo(product);
+
+        return product;
+
+    }
+
+    /**
+     * Product -> RequestProduct 변환
+     *
+     * @param seq
+     * @return
+     */
+    public RequestProduct getForm(Long seq) {
+        Product product = get(seq);
+        RequestProduct form = new ModelMapper().map(product, RequestProduct.class);
+
+        Category category = product.getCategory();
+        if (category != null) {
+            form.setCateCd(category.getCateCd());
+        }
+
+        form.setStatus(product.getStatus().name());
+        form.setDiscountType(product.getDiscountType().name());
+
+        form.setMode("edit");
+
+        return form;
+    }
+
+    /**
+     * 상품 목록 조회
+     *
+     * @param search : 검색 조건
+     * @param isAll : true - 미노출 상품도 모두 보이기 
+     * @return
+     */
+    public ListData<Product> getList(ProductSearch search, boolean isAll) {
+        int page = Utils.onlyPositiveNumber(search.getPage(), 1);
+        int limit = Utils.onlyPositiveNumber(search.getLimit(), 20);
+
+        QProduct product = QProduct.product;
+        BooleanBuilder andBuilder = new BooleanBuilder();
+
+        /* 검색 조건 처리 S */
+        List<String> cateCd = search.getCateCd();
+        List<Long> seq = search.getSeq();
+        List<String> statuses = search.getStatuses();
+        LocalDate sdate = search.getSdate();
+        LocalDate edate = search.getEdate();
+        String name = search.getName();
+
+        // 상품 분류 처리
+        if (cateCd != null && !cateCd.isEmpty()) {
+            andBuilder.and(product.category.cateCd.in(cateCd));
+        }
+
+        // 상품 번호 처리
+        if (seq != null && !seq.isEmpty()) {
+            andBuilder.and(product.seq.in(seq));
+        }
+
+        // 상품 상태 처리
+        if (statuses != null && !statuses.isEmpty()) {
+            List<ProductStatus> _statuses = statuses.stream().map(ProductStatus::valueOf).toList();
+            andBuilder.and(product.status.in(_statuses));
+        }
+
+        // 상품 등록일자 검색 처리 S
+        if (sdate != null) {
+            andBuilder.and(product.createdAt.goe(LocalDateTime.of(sdate, LocalTime.of(0,0,0))));
+        }
+
+        if (edate != null) {
+            andBuilder.and(product.createdAt.loe(LocalDateTime.of(edate, LocalTime.of(23, 59, 59))));
+        }
+        // 상품 등록일자 검색 처리 E
+
+        // 상품명 검색
+        if (StringUtils.hasText(name)) {
+            andBuilder.and(product.name.contains(name.trim()));
+        }
+
+        // 키워드 검색 처리 E
+
+        /* 검색 조건 처리 E */
+
+        Pageable pageable = PageRequest.of(page - 1, limit, Sort.by(desc("listOrder"), desc("createdAt")));
+
+        Page<Product> data = productRepository.findAll(andBuilder, pageable);
+        Pagination pagination = new Pagination(page, (int)data.getTotalElements(), 10, limit, request);
+
+        List<Product> items = data.getContent();
+        items.forEach(this::addProductInfo); // 추가 정보 처리
+
+        return new ListData<>(items, pagination);
+    }
+
+    /**
+     * 상품 추가 정보 처리
+     *
+     * @param product
+     */
+    public void addProductInfo(Product product) {
+        String gid = product.getGid();
+
+        List<FileInfo> editorImages = fileInfoService.getListDone(gid, "editor");
+        List<FileInfo> mainImages = fileInfoService.getListDone(gid, "main");
+        List<FileInfo> listImages = fileInfoService.getListDone(gid, "list");
+
+        product.setEditorImages(editorImages);
+        product.setMainImages(mainImages);
+        product.setListImages(listImages);
+    }
+}
 ```
 
 > product/service/ProductDeleteService.java
 
 ```java
+package org.choongang.product.service;
 
+import lombok.RequiredArgsConstructor;
+import org.choongang.commons.Utils;
+import org.choongang.file.service.FileDeleteService;
+import org.choongang.product.entities.Product;
+import org.choongang.product.repositories.ProductOptionRepository;
+import org.choongang.product.repositories.ProductRepository;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class ProductDeleteService {
+    private final ProductInfoService productInfoService;
+    private final ProductRepository productRepository;
+    private final ProductOptionRepository productOptionRepository;
+    private final FileDeleteService fileDeleteService;
+    private final Utils utils;
+
+    public void delete(Long seq) {
+        Product product = productInfoService.get(seq);
+
+        String gid = product.getGid();
+        fileDeleteService.delete(gid);
+
+        productRepository.delete(product);
+        productRepository.flush();
+    }
+
+    /**
+     * 상품 목록에서 삭제
+     * 
+     * @param chks
+     */
+    public void deleteList(List<Integer> chks) {
+        for (int chk : chks) {
+            Long seq = Long.parseLong(utils.getParam("seq_" + chk));
+            delete(seq);
+        }
+    }
+}
 ```
 
 > admin/product/controllers/ProductController.java
@@ -1514,6 +1840,7 @@ public class ProductController implements ExceptionProcessor {
     ...
 
     private final ProductSaveService productSaveService;
+    private final ProductInfoService productInfoService;
     
     ...
 

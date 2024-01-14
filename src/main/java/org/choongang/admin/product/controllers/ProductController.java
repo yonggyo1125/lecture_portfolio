@@ -7,12 +7,10 @@ import org.choongang.admin.menus.MenuDetail;
 import org.choongang.commons.ExceptionProcessor;
 import org.choongang.commons.Utils;
 import org.choongang.commons.exceptions.AlertException;
+import org.choongang.file.service.FileInfoService;
 import org.choongang.product.constants.ProductStatus;
 import org.choongang.product.entities.Category;
-import org.choongang.product.service.CategoryDeleteService;
-import org.choongang.product.service.CategoryInfoService;
-import org.choongang.product.service.CategorySaveService;
-import org.choongang.product.service.ProductSaveService;
+import org.choongang.product.service.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -33,7 +31,9 @@ public class ProductController implements ExceptionProcessor {
     private final CategoryInfoService categoryInfoService;
     private final CategoryDeleteService categoryDeleteService;
 
+    private final FileInfoService fileInfoService;
     private final ProductSaveService productSaveService;
+    private final ProductInfoService productInfoService;
 
     @ModelAttribute("menuCode")
     public String getMenuCode() {
@@ -96,12 +96,36 @@ public class ProductController implements ExceptionProcessor {
         commonProcess(mode, model);
 
         if (errors.hasErrors()) {
+
+            String gid = form.getGid();
+
+            form.setEditorImages(fileInfoService.getList(gid, "editor"));
+            form.setMainImages(fileInfoService.getList(gid, "main"));
+            form.setListImages(fileInfoService.getList(gid, "list"));
+
             return "admin/product/" + mode;
         }
 
         productSaveService.save(form);
 
         return "redirect:/admin/product";
+    }
+
+    /**
+     * 상품 정보 수정
+     *
+     * @param seq
+     * @param model
+     * @return
+     */
+    @GetMapping("/edit/{seq}")
+    public String edit(@PathVariable("seq") Long seq, Model model) {
+        commonProcess("edit", model);
+
+        RequestProduct form = productInfoService.getForm(seq);
+        model.addAttribute("requestProduct", form);
+
+        return "admin/product/edit";
     }
 
     /**

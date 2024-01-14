@@ -111,7 +111,11 @@
         <tr>
             <th width="180">메인이미지</th>
             <td>
-                <div class="uploaded_files" id="main_files"></div>
+                <div class="uploaded_files" id="main_files">
+                    <th:block th:each="item : *{mainImages}">
+                        <span th:replace="~{common/_image_file::item}"></span>
+                    </th:block>
+                </div>
                 <button type="button" class="sbtn upload_files" data-location="main" data-image-only="true">
                     <i class="xi-image"></i>
                     이미지 추가
@@ -121,7 +125,11 @@
         <tr>
             <th width="180">목록이미지</th>
             <td>
-                <div class="uploaded_files" id="list_files"></div>
+                <div class="uploaded_files" id="list_files">
+                    <th:block th:each="item : *{listImages}">
+                        <span th:replace="~{common/_image_file::item}"></span>
+                    </th:block>
+                </div>
                 <button type="button" class="sbtn upload_files" data-location="list" data-image-only="true" data-single-file="true">
                     <i class="xi-image"></i>
                     이미지 추가
@@ -173,7 +181,11 @@
         <i class="xi-image"></i>
         이미지 추가
     </button>
-    <div class="uploaded_files" id="editor_files"></div>
+    <div class="uploaded_files" id="editor_files">
+        <th:block th:each="item : *{editorImages}">
+            <span th:replace="~{common/_editor_file::item}"></span>
+        </th:block>
+    </div>
     <script th:replace="~{common/_file_tpl::image1_tpl}"></script>
     <script th:replace="~{common/_file_tpl::editor_tpl}"></script>
 </th:block>
