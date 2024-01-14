@@ -19,9 +19,9 @@
 
 ## [쇼핑몰](https://github.com/yonggyo1125/lecture_portfolio/tree/shopping-mall/shoppingmall) 
 
-- 상품
-- 장바구니
-- 주문
+- [상품](https://github.com/yonggyo1125/lecture_portfolio/blob/shopping-mall/shoppingmall/PRODUCT.md)
+- [장바구니](https://github.com/yonggyo1125/lecture_portfolio/blob/shopping-mall/shoppingmall/CART.md)
+- [주문](https://github.com/yonggyo1125/lecture_portfolio/blob/shopping-mall/shoppingmall/ORDER.md)
 
 ## REST API 
 
