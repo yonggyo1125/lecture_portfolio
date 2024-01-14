@@ -33,5 +33,5 @@
 - [주소 API 연동](https://github.com/yonggyo1125/lecture_portfolio/blob/address-api/ADDRESS_API.md)
 - [레이어팝업](https://github.com/yonggyo1125/lecture_portfolio/blob/layer-popup/LAYER_POPUP.md)
 - [달력](https://github.com/yonggyo1125/lecture_portfolio/blob/calendar/CALENDAR.md)
-- [CSV파일 읽어오기]()
-- [엑셀파일 읽어오기]()
+- [CSV파일 읽어오기](https://github.com/yonggyo1125/lecture_portfolio/blob/master/READ_CSV.md)
+- [엑셀파일 읽어오기](https://github.com/yonggyo1125/lecture_portfolio/blob/master/READ_XLS.md)
