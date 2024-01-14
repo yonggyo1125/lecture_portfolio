@@ -745,4 +745,194 @@ public class Utils {
 
 ## 상품 등록 
 
+> product/constants/DiscountType.java : 할인 방식 - 퍼센트, 고정금액 
+
+```java
+package org.choongang.product.constants;
+
+/**
+ * 할인 종류
+ *
+ */
+public enum DiscountType {
+    PERCENT, // 상품가 퍼센트 비율 할인
+    PRICE, // 고정 금액 할인
+}
+```
+
+> product/constants/ProductStatus.java : 상품 상태
+>
+> 상품은 판매중, 상품 준비중 상태만 노출, 주문 및 장바구니 담기는 판매중 만 가능
+> 
+> 품절 상태는 2가지로 결정된다. 1) 상품 상태가 품절, 2) 재고 사용 중이고 재고가 0인 경우
+> 
+>상품이 품절 상태이라면 재고사용 중이고 재고가 남아 있어도 품절로 처리 
+
+```java
+/**
+ * 상품 상태
+ *
+ */
+public enum ProductStatus {
+    SALE, // 판매중
+    OUT_OF_STOCK, // 품절
+    PREPARE, // 상품 준비중
+}
+```
+
+### 엔티티 및 레포지토리 구성
+
+> product/entities/Product.java : 상품 엔티티
+
+```java
+package org.choongang.product.entities;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.choongang.commons.entities.BaseMember;
+import org.choongang.file.entities.FileInfo;
+import org.choongang.product.constants.DiscountType;
+import org.choongang.product.constants.ProductStatus;
+
+import java.util.List;
+import java.util.UUID;
+
+@Entity
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class Product extends BaseMember {
+
+    @Id @GeneratedValue
+    private Long seq; // 상품 번호
+
+    @Column(length=65)
+    private String gid = UUID.randomUUID().toString(); // 그룹 ID
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="cateCd")
+    private Category category; // 상품 분류
+
+    @Column(length=100, nullable = false)
+    private String name; // 상품명
+
+    private int consumerPrice; // 소비자가(보이는 금액)
+    private int salePrice; // 판매가(결제 기준 금액)
+
+    private boolean useStock; // 재고 사용 여부 - true : 재고 차감
+    private int stock; // 옵션을 사용하지 않는 경우 단일 상품 재고, 0 - 무제한
+
+    @Enumerated(EnumType.STRING)
+    @Column(length=10, nullable = false)
+    private DiscountType discountType = DiscountType.PERCENT;
+    private int discount; // 할인 금액
+
+    @Lob
+    private String extraInfo; // 상품 추가 정보 : JSON 문자열로 저장
+
+    private boolean packageDelivery; // 같은 판매자별 묶음 배송 여부
+    private int deliveryPrice; // 배송비, 0이면 무료 배송
+
+    @Lob
+    private String description; // 상품 상세 설명
+
+    private float score; // 평점
+
+    private boolean active; // 노출 여부 : true -> 소비자 페이지 노출
+
+    @Enumerated(EnumType.STRING)
+    @Column(length=15, nullable = false)
+    private ProductStatus status = ProductStatus.PREPARE; // 상품 상태
+
+    private boolean useOption; // 옵션 사용 여부, true : 옵션 사용, 재고는 옵션쪽 재고 사용
+
+
+    @Column(length=60)
+    private String optionName; // 옵션명
+
+    @Transient
+    private List<FileInfo> mainImages; // 메인 이미지
+
+    @Transient
+    private List<FileInfo> listImages; // 목록 이미지
+
+    @Transient
+    private List<FileInfo> editorImages; // 에디터에 첨부한 이미지
+}
+```
+
+> product/entities/ProductOption.java : 상품 옵션 엔티티 
+>
+> 1개의 상품은 여러개의 옵션을 가질 수 있으므로 @ManyToOne으로 Product 엔티티와 관계 매핑
+
+```java
+package org.choongang.product.entities;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.choongang.commons.entities.BaseMember;
+
+@Entity
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(indexes =
+@Index(name="idx_pdt_opt_order", columnList = "listOrder DESC, createdAt ASC"))
+public class ProductOption extends BaseMember {
+
+    @Id @GeneratedValue
+    private Long seq;
+
+    @Column(length=80, nullable = false)
+    private String name; // 옵션명
+
+    private int addPrice; // 옵션 추가금액(-, +)
+
+    private boolean useStock; // false : 무제한, true : 재고 0 -> 품절
+    private int stock; // 옵션별 재고
+
+    private int listOrder; // 진열 가중치, 번호가 클 수록 앞에 진열
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "productSeq")
+    private Product product;
+}
+```
+
+> product/repositories/ProductRepository.java
+
+```java
+package org.choongang.product.repositories;
+
+import org.choongang.product.entities.Product;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+
+public interface ProductRepository extends JpaRepository<Product, Long>, QuerydslPredicateExecutor<Product> {
+
+}
+```
+
+> product/repositories/ProductOptionRepository.java
+
+```java
+package org.choongang.product.repositories;
+
+import org.choongang.product.entities.ProductOption;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+
+public interface ProductOptionRepository extends JpaRepository<ProductOption, Long>, QuerydslPredicateExecutor<ProductOption> {
+
+}
+```
+
 ## 상품 수정
