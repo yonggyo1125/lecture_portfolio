@@ -27,6 +27,7 @@ public class ExcelUtils {
     private List<String> sqlData; // 생성된 SQL 데이터 담을 공간
 
     /**
+     * 엑셀 데이터 추출
      *
      * @param filePath : 엑셀 파일 경로
      * @param cellNums : 데이터로 추출할 셀번호, 0번 부터 시작
@@ -63,6 +64,17 @@ public class ExcelUtils {
         }
 
         return data;
+    }
+
+    /**
+     * 엑셀 데이터를 문자열로 결합
+     *
+     * @param delimiter : 구분 문자
+     * @return
+     */
+    public List<String> getData(String filePath, int[] cellNums, int sheetNo, String delimiter) {
+
+        return getData(filePath, cellNums, sheetNo).stream().map(s -> Arrays.stream(s).collect(Collectors.joining(delimiter))).toList();
     }
 
     public String getCellData(XSSFCell cell) {
@@ -136,4 +148,6 @@ public class ExcelUtils {
             e.printStackTrace();
         }
     }
+
+
 }

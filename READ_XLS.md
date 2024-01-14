@@ -64,6 +64,7 @@ public class ExcelUtils {
     private List<String> sqlData; // 생성된 SQL 데이터 담을 공간
 
     /**
+     * 엑셀 데이터 추출
      *
      * @param filePath : 엑셀 파일 경로
      * @param cellNums : 데이터로 추출할 셀번호, 0번 부터 시작
@@ -100,6 +101,17 @@ public class ExcelUtils {
         }
 
         return data;
+    }
+
+    /**
+     * 엑셀 데이터를 문자열로 결합
+     *
+     * @param delimiter : 구분 문자
+     * @return
+     */
+    public List<String> getData(String filePath, int[] cellNums, int sheetNo, String delimiter) {
+
+        return getData(filePath, cellNums, sheetNo).stream().map(s -> Arrays.stream(s).collect(Collectors.joining(delimiter))).toList();
     }
 
     public String getCellData(XSSFCell cell) {
@@ -173,6 +185,8 @@ public class ExcelUtils {
             e.printStackTrace();
         }
     }
+
+
 }
 ```
 
@@ -232,6 +246,12 @@ public class ExcelUtilsTest {
         assertTrue(file.exists());
     }
 
+    @Test
+    @DisplayName("엑셀파일 -> delimiter 문자열을 결합한 List<String> 변환 테스트")
+    void test4() {
+        List<String> data = utils.getData("data/schools.xlsx", new int[] {0, 1}, 0,"_");
+        data.forEach(System.out::println);
+    }
 }
 ```
 
@@ -247,3 +267,9 @@ public class ExcelUtilsTest {
 - toFile("data/schools.sql") 로 생성한 data/schools.sql 파일 내용
 
 ![image4](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/master/images/excel/image4.png)
+
+> 1조의 경우 학교명_도메인으로 데이터를 가공해야 하는 것으로 알고 있습니다.
+> 
+> 학교별 도메인이 홈페이지 주소라 2차 가공할것이 좀더 있지만 test4() 내용을 살펴보고 2차 가공을 생각해 봅시다!
+
+![image5](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/master/images/excel/image5.png)

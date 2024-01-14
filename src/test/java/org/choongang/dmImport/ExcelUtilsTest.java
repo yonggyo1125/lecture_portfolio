@@ -44,4 +44,10 @@ public class ExcelUtilsTest {
         assertTrue(file.exists());
     }
 
+    @Test
+    @DisplayName("엑셀파일 -> delimiter 문자열을 결합한 List<String> 변환 테스트")
+    void test4() {
+        List<String> data = utils.getData("data/schools.xlsx", new int[] {0, 1}, 0,"_");
+        data.forEach(System.out::println);
+    }
 }
