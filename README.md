@@ -17,11 +17,14 @@
 ## 지역화
 - [국가별 언어 수동 변경](https://github.com/yonggyo1125/lecture_portfolio/blob/localization/LOCALIZATION.md)
 
-## 상품 & 주문 
-- 찜기능
-- 결제
+## 쇼핑몰 
+
+- 상품
+- 장바구니
+- 주문
 
 ## REST API 
+
 - 공공데이터 API 연동
 - 코인 거래소 API 연동
 
