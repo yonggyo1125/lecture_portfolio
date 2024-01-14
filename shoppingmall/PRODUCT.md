@@ -756,6 +756,25 @@ ProductStatus.OUT_OF_STOCK=품절
 ProductStatus.PREPARE=상품준비중
 ```
 
+> resources/messages/validations.properties
+
+```properties
+
+...
+
+#관리자 - 상품 - 등록/수정
+NotBlank.requestProduct.cateCd=분류코드를 선택하세요.
+NotBlank.requestProduct.name=상품명을 입력하세요.
+```
+
+> resources/messages/errors.properties
+
+```properties 
+...
+
+NotFound.product=등록된 상품이 아닙니다.
+```
+
 > product/constants/DiscountType.java : 할인 방식 - 퍼센트, 고정금액 
 
 ```java
@@ -1052,10 +1071,16 @@ public class ProductController implements ExceptionProcessor {
         return Menu.getMenus("product");
     }
 
-    /* 상품 상태 목록 */
+    // 상품 상태 목록
     @ModelAttribute("productStatuses")
     public List<String[]> getProductStatuses() {
         return ProductStatus.getList();
+    }
+    
+    // 상품 분류 목록
+    @ModelAttribute("categories")
+    public List<Category> getCategories() {
+        return categoryInfoService.getList(true);
     }
     
     ...
@@ -1081,7 +1106,7 @@ public class ProductController implements ExceptionProcessor {
      * @return
      */
     @PostMapping("/save")
-    public String save(RequestProduct form, Errors errors, Model model) {
+    public String save(@Valid RequestProduct form, Errors errors, Model model) {
         String mode = form.getMode();
         commonProcess(mode, model);
 
@@ -1094,6 +1119,425 @@ public class ProductController implements ExceptionProcessor {
 }
 ```
 
+> resources/template/product/_form.html
+
+```html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="form" th:object="${requestProduct}">
+    <input type="hidden" name="gid" th:field="*{gid}">
+    <h2>기본 정보</h2>
+    <table class="table_cols mb30">
+        <tr th:if="*{mode == 'edit' && seq != null}">
+            <th width="180">상품번호</th>
+            <td>
+                <input type="hidden" name="seq" th:field="*{seq}">
+                <th:block th:text="*{seq}"></th:block>
+            </td>
+        </tr>
+        <tr>
+            <th>노출여부</th>
+            <td>
+                <input type="radio" name="active" value="true" id="active_true" th:field="*{active}">
+                <label for="active_true">노출</label>
+                <input type="radio" name="active" value="false" id="active_false" th:field="*{active}">
+                <label for="active_false">미노출</label>
+            </td>
+        </tr>
+        <tr>
+            <th>상품상태</th>
+            <td>
+                <th:block th:each="s, sts : ${productStatuses}">
+                    <input type="radio" name="status" th:value="${s[0]}" th:id="${'status_' + sts.index}" th:field="*{status}">
+                    <label th:for="${'status_' + sts.index}" th:text="${s[1]}"></label>
+                </th:block>
+            </td>
+        </tr>
+        <tr>
+            <th width="180">분류코드</th>
+            <td>
+                <select name="cateCd" th:field="*{cateCd}">
+                    <option value="">- 선택하세요 -</option>
+                    <option th:each="category : ${categories}" th:value="${category.cateCd}" th:text="${#strings.concat(category.cateNm,'(', category.cateCd, ')')}"></option>
+                </select>
+                <div class="error" th:each="err : ${#fields.errors('cateCd')}" th:text="${err}"></div>
+            </td>
+        </tr>
+        <tr>
+            <th>상품명</th>
+            <td>
+                <input type="text" name="name" th:field="*{name}">
+                <div class="error" th:each="err : ${#fields.errors('name')}" th:text="${err}"></div>
+            </td>
+        </tr>
+        <tr>
+            <th>소비자가</th>
+            <td>
+                <input type="number" name="consumerPrice" th:field="*{consumerPrice}" class="w200">
+                <div class="error" th:each="err : ${#fields.errors('consumerPrice')}" th:text="${err}"></div>
+            </td>
+        </tr>
+        <tr>
+            <th>판매가</th>
+            <td>
+                <input type="text" name="salePrice" th:field="*{salePrice}" class="w200">
+                <div class="error" th:each="err : ${#fields.errors('salePrice')}" th:text="${err}"></div>
+            </td>
+        </tr>
+        <tr>
+            <th>상품할인</th>
+            <td>
+                <div class="input_grp">
+                    <input type="number" name="discount" th:field="*{discount}" class="w200 ar">
+                    <select name="discountType" th:field="*{discountType}">
+                        <option value="PERCENT">%</option>
+                        <option value="PRICE">원</option>
+                    </select>
+                </div>
+                <div class="error" th:each="err : ${#fields.errors('discount')}" th:text="${err}"></div>
+                <div class="error" th:each="err : ${#fields.errors('discountType')}" th:text="${err}"></div>
+            </td>
+        </tr>
+        <tr>
+            <th>묶음배송</th>
+            <td>
+                <input type="radio" name="packageDelivery" value="true" th:field="*{packageDelivery}" id="packageDelivery_true">
+                <label for="packageDelivery_true">사용</label>
+                <input type="radio" name="packageDelivery" value="false" th:field="*{packageDelivery}" id="packageDelivery_false">
+                <label for="packageDelivery_false">미사용</label>
+                <div class="error" th:each="err : ${#fields.errors('packageDelivery')}" th:text="${err}"></div>
+            </td>
+        </tr>
+        <tr>
+            <th>배송비</th>
+            <td>
+                <input type="number" name="deliveryPrice" th:field="*{deliveryPrice}" class="w200">원
+                <div class="error" th:each="err : ${#fields.errors('deliveryPrice')}" th:text="${err}"></div>
+            </td>
+        </tr>
+        <tr>
+            <th>재고</th>
+            <td>
+                <div class="input_grp">
+                    <select name="useStock" th:field="*{useStock}">
+                        <option value="true">사용</option>
+                        <option value="false">미사용</option>
+                    </select>
+                    <input type="number" name="stock" th:field="*{stock}" class="w200 ar">개
+                </div>
+                <div class="error" th:each="err : ${#fields.errors('stock')}" th:text="${err}"></div>
+            </td>
+        </tr>
+    </table>
+
+    <h2>상품 이미지</h2>
+    <table class="table_cols mb30">
+        <tr>
+            <th width="180">메인이미지</th>
+            <td>
+                <div class="uploaded_files" id="main_files"></div>
+                <button type="button" class="sbtn upload_files" data-location="main" data-image-only="true">
+                    <i class="xi-image"></i>
+                    이미지 추가
+                </button>
+            </td>
+        </tr>
+        <tr>
+            <th width="180">목록이미지</th>
+            <td>
+                <div class="uploaded_files" id="list_files"></div>
+                <button type="button" class="sbtn upload_files" data-location="list" data-image-only="true" data-single-file="true">
+                    <i class="xi-image"></i>
+                    이미지 추가
+                </button>
+            </td>
+        </tr>
+    </table>
+
+    <h2>추가정보</h2>
+    <table class="table_cols mb30">
+        <tr>
+            <th width="180">내용(JSON)</th>
+            <td>
+                <textarea name="extraInfo" th:field="*{extraInfo}"></textarea>
+                <div class="error" th:each="err : ${#fields.errors('extraInfo')}" th:text="${err}"></div>
+            </td>
+        </tr>
+    </table>
+
+    <h2>옵션 정보</h2>
+    <table class="table_cols mb30">
+        <tr>
+            <th width="180">사용여부</th>
+            <td>
+                <input type="radio" name="useOption" value="true" th:field="*{useOption}" id="useOption_true">
+                <label for="useOption_true">사용</label>
+                <input type="radio" name="useOption" value="false" th:field="*{useOption}" id="useOption_false">
+                <label for="useOption_false">미사용</label>
+                <div class="error" th:each="err : ${#fields.errors('useOption')}" th:text="${err}"></div>
+            </td>
+        </tr>
+        <tr>
+            <th>옵션명</th>
+            <td>
+                <input type="text" name="optionName" th:field="*{optionName}">
+                <div class="error" th:each="err : ${#fields.errors('optionName')}" th:text="${err}"></div>
+            </td>
+        </tr>
+        <tr>
+            <th>옵션목록</th>
+            <td></td>
+        </tr>
+    </table>
+    <h2>상세 설명</h2>
+    <div class="mb10">
+        <textarea name="description" th:field="*{description}" id="description"></textarea>
+    </div>
+    <button type="button" class="sbtn upload_files" data-location="editor" data-image-only="true" data-single-file="true">
+        <i class="xi-image"></i>
+        이미지 추가
+    </button>
+    <div class="uploaded_files" id="editor_files"></div>
+    <script th:replace="~{common/_file_tpl::image1_tpl}"></script>
+    <script th:replace="~{common/_file_tpl::editor_tpl}"></script>
+</th:block>
+</html>
+```
+
+> resources/static/admin/js/product/form.js
+
+```javascript
+window.addEventListener("DOMContentLoaded", function() {
+    /* 상세 설명 에디터 로드 S */
+    const { loadEditor } = commonLib;
+
+    loadEditor("description", 450)
+        .then(editor => window.editor = editor);
+
+    /* 상세 설명 에디터 로드 E */
+
+    /* 이미지 본문 추가 이벤트 처리 S */
+    const insertImages = document.getElementsByClassName("insert_image");
+    for (const el of insertImages) {
+        el.addEventListener("click", function() {
+            const parentId = this.parentElement.parentElement.id;
+            const url = this.dataset.url;
+
+            insertImage(url);
+        });
+    }
+    /* 이미지 본문 추가 이벤트 처리 E */
+
+});
+
+/**
+* 파일 업로드 후속 처리
+*
+*/
+function callbackFileUpload(files) {
+    const editorTpl = document.getElementById("editor_tpl").innerHTML;
+    const imageTpl = document.getElementById("image1_tpl").innerHTML;
+
+    const domParser = new DOMParser();
+    const mainImageEl = document.getElementById("main_files");
+    const listImageEl = document.getElementById("list_files");
+    const editorImageEl = document.getElementById("editor_files");
+
+    for (const file of files) {
+        const location = file.location;
+        let targetEl, html;
+        switch (location) {
+            case "main":
+                html = imageTpl;
+                targetEl = mainImageEl;
+                break;
+            case "list":
+                html = imageTpl;
+                targetEl = listImageEl;
+                break;
+            default :
+                html = editorTpl;
+                targetEl = editorImageEl;
+                insertImage(editor, file.fileUrl); // 에디터에 이미지 추가
+        }
+
+         /* 템플릿 데이터 치환 S */
+         html = html.replace(/\[seq\]/g, file.seq)
+                    .replace(/\[fileName\]/g, file.fileName)
+                    .replace(/\[imageUrl\]/g, file.fileUrl);
+
+         const dom = domParser.parseFromString(html, "text/html");
+         const fileBox = location == 'editor' ? dom.querySelector(".file_tpl_box") :  dom.querySelector(".image1_tpl_box")
+         console.log(fileBox);
+         targetEl.appendChild(fileBox);
 
 
+         const el = fileBox.querySelector(".insert_image")
+         if (el) {
+            // 이미지 본문 추가 이벤트
+            el.addEventListener("click", () => insertImage(file.fileUrl));
+         }
+         /* 템플릿 데이터 치환 E */
+    }
+}
+
+
+/**
+* 에디터에 이미지 추가
+*
+*/
+function insertImage(source) {
+    editor.execute('insertImage', { source });
+}
+
+/**
+* 파일 삭제 후 후속 처리
+*
+* @param seq : 파일 등록 번호
+*/
+function callbackFileDelete(seq) {
+    const fileBox = document.getElementById(`file_${seq}`);
+    fileBox.parentElement.removeChild(fileBox);
+}
+```
+
+### 서비스 구현 
+
+> product/service/ProductNotFoundException.java
+
+```java
+package org.choongang.product.service;
+
+import org.choongang.commons.Utils;
+import org.choongang.commons.exceptions.AlertBackException;
+import org.springframework.http.HttpStatus;
+
+/**
+ * 상품이 조회되지 않는 경우 발생하는 예외
+ */
+public class ProductNotFoundException extends AlertBackException {
+    public ProductNotFoundException() {
+        super(Utils.getMessage("NotFound.product", "errors"), HttpStatus.NOT_FOUND);
+    }
+}
+```
+
+> product/service/ProductSaveService.java 
+
+```java
+package org.choongang.product.service;
+
+import lombok.RequiredArgsConstructor;
+import org.choongang.admin.product.controllers.RequestProduct;
+import org.choongang.file.service.FileUploadService;
+import org.choongang.product.constants.DiscountType;
+import org.choongang.product.constants.ProductStatus;
+import org.choongang.product.entities.Category;
+import org.choongang.product.entities.Product;
+import org.choongang.product.repositories.CategoryRepository;
+import org.choongang.product.repositories.ProductOptionRepository;
+import org.choongang.product.repositories.ProductRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
+@Service
+@RequiredArgsConstructor
+public class ProductSaveService {
+
+    private final ProductRepository productRepository;
+    private final ProductOptionRepository productOptionRepository;
+    private final FileUploadService fileUploadService;
+    private final CategoryRepository categoryRepository;
+    public void save(RequestProduct form) {
+
+        String mode = form.getMode();
+        Long seq = form.getSeq();
+
+        Product product = null;
+
+        if (mode.equals("edit") && seq != null) {
+            product = productRepository.findById(seq).orElseThrow(ProductNotFoundException::new);
+
+        } else {
+            product = new Product();
+            product.setGid(form.getGid());
+        }
+
+        /* 분류 설정 S */
+        String cateCd = form.getCateCd();
+        if (StringUtils.hasText(cateCd)) {
+            Category category = categoryRepository.findById(cateCd).orElse(null);
+            product.setCategory(category);
+        }
+        /* 분류 설정 E */
+
+        product.setName(form.getName());
+        product.setConsumerPrice(form.getConsumerPrice());
+        product.setSalePrice(form.getSalePrice());
+
+        product.setStatus(ProductStatus.valueOf(form.getStatus()));
+        product.setDiscountType(DiscountType.valueOf(form.getDiscountType()));
+
+        product.setUseStock(form.isUseStock());
+        product.setStock(form.getStock());
+        product.setExtraInfo(form.getExtraInfo());
+        product.setPackageDelivery(form.isPackageDelivery());
+        product.setDeliveryPrice(form.getDeliveryPrice());
+        product.setDescription(form.getDescription());
+        product.setActive(form.isActive());
+        product.setUseOption(form.isUseOption());
+        product.setOptionName(form.getOptionName());
+
+        fileUploadService.processDone(product.getGid());
+    }
+}
+```
+
+> product/service/ProductInfoService.java
+
+```java
+
+```
+
+> product/service/ProductDeleteService.java
+
+```java
+
+```
+
+> admin/product/controllers/ProductController.java
+
+```java
+...
+
+public class ProductController implements ExceptionProcessor {
+    ...
+
+    private final ProductSaveService productSaveService;
+    
+    ...
+
+    /**
+     * 상품 등록, 수정 처리
+     *
+     * @param model
+     * @return
+     */
+    @PostMapping("/save")
+    public String save(@Valid RequestProduct form, Errors errors, Model model) {
+        String mode = form.getMode();
+        commonProcess(mode, model);
+
+        if (errors.hasErrors()) {
+            return "admin/product/" + mode;
+        }
+
+        productSaveService.save(form);
+
+        return "redirect:/admin/product";
+    }
+    
+    ...
+}
+```
 ## 상품 수정

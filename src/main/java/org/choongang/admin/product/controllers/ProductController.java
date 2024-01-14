@@ -12,6 +12,7 @@ import org.choongang.product.entities.Category;
 import org.choongang.product.service.CategoryDeleteService;
 import org.choongang.product.service.CategoryInfoService;
 import org.choongang.product.service.CategorySaveService;
+import org.choongang.product.service.ProductSaveService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -32,6 +33,8 @@ public class ProductController implements ExceptionProcessor {
     private final CategoryInfoService categoryInfoService;
     private final CategoryDeleteService categoryDeleteService;
 
+    private final ProductSaveService productSaveService;
+
     @ModelAttribute("menuCode")
     public String getMenuCode() {
         return "product";
@@ -42,10 +45,17 @@ public class ProductController implements ExceptionProcessor {
         return Menu.getMenus("product");
     }
 
-    /* 상품 상태 목록 */
+    // 상품 상태 목록
     @ModelAttribute("productStatuses")
     public List<String[]> getProductStatuses() {
         return ProductStatus.getList();
+    }
+
+    
+    // 상품 분류 목록
+    @ModelAttribute("categories")
+    public List<Category> getCategories() {
+        return categoryInfoService.getList(true);
     }
 
     /**
@@ -81,13 +91,15 @@ public class ProductController implements ExceptionProcessor {
      * @return
      */
     @PostMapping("/save")
-    public String save(RequestProduct form, Errors errors, Model model) {
+    public String save(@Valid RequestProduct form, Errors errors, Model model) {
         String mode = form.getMode();
         commonProcess(mode, model);
 
         if (errors.hasErrors()) {
             return "admin/product/" + mode;
         }
+
+        productSaveService.save(form);
 
         return "redirect:/admin/product";
     }

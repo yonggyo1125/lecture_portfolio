@@ -90,4 +90,6 @@ select { border: 1px solid #d5d5d5; height: 35px; }
 .pagination .page + .page { margin-left: 3px; }
 /* 페이징 공통 E */
 
+
 .no_data { text-align: center; padding: 50px 0 !important;  }
+.input_grp { display: flex; align-items: center; }

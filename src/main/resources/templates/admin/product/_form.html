@@ -1,6 +1,180 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<th:block th:fragment="form">
+<th:block th:fragment="form" th:object="${requestProduct}">
+    <input type="hidden" name="gid" th:field="*{gid}">
+    <h2>기본 정보</h2>
+    <table class="table_cols mb30">
+        <tr th:if="*{mode == 'edit' && seq != null}">
+            <th width="180">상품번호</th>
+            <td>
+                <input type="hidden" name="seq" th:field="*{seq}">
+                <th:block th:text="*{seq}"></th:block>
+            </td>
+        </tr>
+        <tr>
+            <th>노출여부</th>
+            <td>
+                <input type="radio" name="active" value="true" id="active_true" th:field="*{active}">
+                <label for="active_true">노출</label>
+                <input type="radio" name="active" value="false" id="active_false" th:field="*{active}">
+                <label for="active_false">미노출</label>
+            </td>
+        </tr>
+        <tr>
+            <th>상품상태</th>
+            <td>
+                <th:block th:each="s, sts : ${productStatuses}">
+                    <input type="radio" name="status" th:value="${s[0]}" th:id="${'status_' + sts.index}" th:field="*{status}">
+                    <label th:for="${'status_' + sts.index}" th:text="${s[1]}"></label>
+                </th:block>
+            </td>
+        </tr>
+        <tr>
+            <th width="180">분류코드</th>
+            <td>
+                <select name="cateCd" th:field="*{cateCd}">
+                    <option value="">- 선택하세요 -</option>
+                    <option th:each="category : ${categories}" th:value="${category.cateCd}" th:text="${#strings.concat(category.cateNm,'(', category.cateCd, ')')}"></option>
+                </select>
+                <div class="error" th:each="err : ${#fields.errors('cateCd')}" th:text="${err}"></div>
+            </td>
+        </tr>
+        <tr>
+            <th>상품명</th>
+            <td>
+                <input type="text" name="name" th:field="*{name}">
+                <div class="error" th:each="err : ${#fields.errors('name')}" th:text="${err}"></div>
+            </td>
+        </tr>
+        <tr>
+            <th>소비자가</th>
+            <td>
+                <input type="number" name="consumerPrice" th:field="*{consumerPrice}" class="w200">
+                <div class="error" th:each="err : ${#fields.errors('consumerPrice')}" th:text="${err}"></div>
+            </td>
+        </tr>
+        <tr>
+            <th>판매가</th>
+            <td>
+                <input type="text" name="salePrice" th:field="*{salePrice}" class="w200">
+                <div class="error" th:each="err : ${#fields.errors('salePrice')}" th:text="${err}"></div>
+            </td>
+        </tr>
+        <tr>
+            <th>상품할인</th>
+            <td>
+                <div class="input_grp">
+                    <input type="number" name="discount" th:field="*{discount}" class="w200 ar">
+                    <select name="discountType" th:field="*{discountType}">
+                        <option value="PERCENT">%</option>
+                        <option value="PRICE">원</option>
+                    </select>
+                </div>
+                <div class="error" th:each="err : ${#fields.errors('discount')}" th:text="${err}"></div>
+                <div class="error" th:each="err : ${#fields.errors('discountType')}" th:text="${err}"></div>
+            </td>
+        </tr>
+        <tr>
+            <th>묶음배송</th>
+            <td>
+                <input type="radio" name="packageDelivery" value="true" th:field="*{packageDelivery}" id="packageDelivery_true">
+                <label for="packageDelivery_true">사용</label>
+                <input type="radio" name="packageDelivery" value="false" th:field="*{packageDelivery}" id="packageDelivery_false">
+                <label for="packageDelivery_false">미사용</label>
+                <div class="error" th:each="err : ${#fields.errors('packageDelivery')}" th:text="${err}"></div>
+            </td>
+        </tr>
+        <tr>
+            <th>배송비</th>
+            <td>
+                <input type="number" name="deliveryPrice" th:field="*{deliveryPrice}" class="w200">원
+                <div class="error" th:each="err : ${#fields.errors('deliveryPrice')}" th:text="${err}"></div>
+            </td>
+        </tr>
+        <tr>
+            <th>재고</th>
+            <td>
+                <div class="input_grp">
+                    <select name="useStock" th:field="*{useStock}">
+                        <option value="true">사용</option>
+                        <option value="false">미사용</option>
+                    </select>
+                    <input type="number" name="stock" th:field="*{stock}" class="w200 ar">개
+                </div>
+                <div class="error" th:each="err : ${#fields.errors('stock')}" th:text="${err}"></div>
+            </td>
+        </tr>
+    </table>
 
+    <h2>상품 이미지</h2>
+    <table class="table_cols mb30">
+        <tr>
+            <th width="180">메인이미지</th>
+            <td>
+                <div class="uploaded_files" id="main_files"></div>
+                <button type="button" class="sbtn upload_files" data-location="main" data-image-only="true">
+                    <i class="xi-image"></i>
+                    이미지 추가
+                </button>
+            </td>
+        </tr>
+        <tr>
+            <th width="180">목록이미지</th>
+            <td>
+                <div class="uploaded_files" id="list_files"></div>
+                <button type="button" class="sbtn upload_files" data-location="list" data-image-only="true" data-single-file="true">
+                    <i class="xi-image"></i>
+                    이미지 추가
+                </button>
+            </td>
+        </tr>
+    </table>
+
+    <h2>추가정보</h2>
+    <table class="table_cols mb30">
+        <tr>
+            <th width="180">내용(JSON)</th>
+            <td>
+                <textarea name="extraInfo" th:field="*{extraInfo}"></textarea>
+                <div class="error" th:each="err : ${#fields.errors('extraInfo')}" th:text="${err}"></div>
+            </td>
+        </tr>
+    </table>
+
+    <h2>옵션 정보</h2>
+    <table class="table_cols mb30">
+        <tr>
+            <th width="180">사용여부</th>
+            <td>
+                <input type="radio" name="useOption" value="true" th:field="*{useOption}" id="useOption_true">
+                <label for="useOption_true">사용</label>
+                <input type="radio" name="useOption" value="false" th:field="*{useOption}" id="useOption_false">
+                <label for="useOption_false">미사용</label>
+                <div class="error" th:each="err : ${#fields.errors('useOption')}" th:text="${err}"></div>
+            </td>
+        </tr>
+        <tr>
+            <th>옵션명</th>
+            <td>
+                <input type="text" name="optionName" th:field="*{optionName}">
+                <div class="error" th:each="err : ${#fields.errors('optionName')}" th:text="${err}"></div>
+            </td>
+        </tr>
+        <tr>
+            <th>옵션목록</th>
+            <td></td>
+        </tr>
+    </table>
+    <h2>상세 설명</h2>
+    <div class="mb10">
+        <textarea name="description" th:field="*{description}" id="description"></textarea>
+    </div>
+    <button type="button" class="sbtn upload_files" data-location="editor" data-image-only="true" data-single-file="true">
+        <i class="xi-image"></i>
+        이미지 추가
+    </button>
+    <div class="uploaded_files" id="editor_files"></div>
+    <script th:replace="~{common/_file_tpl::image1_tpl}"></script>
+    <script th:replace="~{common/_file_tpl::editor_tpl}"></script>
 </th:block>
 </html>
