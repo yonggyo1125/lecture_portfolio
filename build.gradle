@@ -34,6 +34,7 @@ dependencies {
 	implementation 'net.coobird:thumbnailator:0.4.20'
 
 	implementation 'com.opencsv:opencsv:5.9'
+	implementation 'org.apache.poi:poi-ooxml:5.2.5'
 
 	runtimeOnly 'com.oracle.database.jdbc:ojdbc11:23.3.0.23.09'
 	implementation 'com.oracle.database.nls:orai18n:23.3.0.23.09'
