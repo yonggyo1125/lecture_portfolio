@@ -31,7 +31,7 @@ public class FileInfoService {
 
     public FileInfo get(Long seq) {
         FileInfo fileInfo = repository.findById(seq)
-                            .orElseThrow(FileNotFoundException::new);
+                .orElseThrow(FileNotFoundException::new);
 
 
         addFileInfo(fileInfo); // 파일 추가 정보 처리

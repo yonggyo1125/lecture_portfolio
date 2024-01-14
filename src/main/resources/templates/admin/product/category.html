@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/layouts/main}">
+<section layout:fragment="content">
+    <h1>분류 관리</h1>
+
+    <h2>분류 등록</h2>
+    <form name="frmPs" method="post" th:action="@{/admin/product/category}" target="ifrmProcess" autocomplete="off" th:object="${requestCategory}">
+        <table class="table_cols">
+            <tr>
+                <th width="180">분류코드</th>
+                <td width="300">
+                    <input type="text" name="cateCd" th:field="*{cateCd}">
+                </td>
+                <th width="180">분류명</th>
+                <td>
+                    <input type="text" name="cateNm" th:field="*{cateNm}">
+                </td>
+            </tr>
+            <tr>
+                <th>진열가중치</th>
+                <td>
+                    <input type="number" name="listOrder" th:field="*{listOrder}">
+                </td>
+                <th>사용여부</th>
+                <td>
+                    <input type="radio" name="active" value="true" id="active_true" th:field="*{active}">
+                    <label for="active_true">사용</label>
+
+                    <input type="radio" name="active" value="false" id="active_false" th:field="*{active}">
+                    <label for="active_false">미사용</label>
+                </td>
+            </tr>
+        </table>
+        <div class="submit_btns">
+            <button type="reset" class="btn">다시입력</button>
+            <button type="submit" class="btn">등록하기</button>
+        </div>
+    </form>
+
+    <h2>분류 목록</h2>
+
+    <form name="frmList" method="post" th:action="@{/admin/product/category}" target="ifrmProcess" autocomplete="off">
+        <input type="hidden" name="_method" value="PATCH">
+        <table class="table_rows">
+            <thead>
+            <tr>
+                <th width="40">
+                    <input type="checkbox" class="checkall" data-target-name="chk" id="checkall">
+                    <label for="checkall"></label>
+                </th>
+                <th width="200">분류코드</th>
+                <th width="300">분류명</th>
+                <th width="200">진열가중치</th>
+                <th width="200">사용여부</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${items != null && !items.isEmpty()}" th:each="item, status : ${items}" th:object="${item}">
+                <td align="center">
+                    <input type="hidden" th:name="${'cateCd_' + status.index}" th:value="*{cateCd}">
+                    <input type="checkbox" name="chk" th:value="${status.index}" th:id="${'chk_' + status.index}">
+                    <label th:for="${'chk_' + status.index}"></label>
+                </td>
+                <td th:text="*{cateCd}" align="center"></td>
+                <td>
+                    <input type="text" th:name="${'cateNm_' + status.index}" th:value="*{cateNm}">
+                </td>
+                <td>
+                    <input type="number" th:name="${'listOrder_' + status.index}" th:value="*{listOrder}">
+                </td>
+                <td align="center">
+                    <input type="radio" th:name="${'active_' + status.index}" th:checked="*{active}" th:id="${'active_' + status.index}" value="true">
+                    <label th:for="${'active_' + status.index}">사용</label>
+
+                    <input type="radio" th:name="${'active_' + status.index}" th:checked="*{!active}" th:id="${'active_' + status.index}" value="false">
+                    <label th:for="${'active_' + status.index}">미사용</label>
+                </td>
+                <td>
+                    <a th:href="@{/admin/product?cateCd={cateCd}(cateCd=*{cateCd})}" class="sbtn">상품관리</a>
+                    <a th:href="@{/product/{cateCd}(cateCd=*{cateCd})}" class="sbtn on" target="_blank">미리보기</a>
+                </td>
+            </tr>
+            <tr th:unless="${items != null && !items.isEmpty()}">
+                <td colspan="6" class="no_data">등록된 분류가 없습니다.</td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="table_actions">
+            <button type="button" class="sbtn form_action" data-mode="delete" data-form-name="frmList">선택 분류 삭제</button>
+
+            <button type="button" class="sbtn on form_action" data-mode="edit" data-form-name="frmList">선택 분류 수정</button>
+        </div>
+    </form>
+
+</section>
+</html>
