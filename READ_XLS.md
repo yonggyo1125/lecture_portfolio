@@ -235,7 +235,15 @@ public class ExcelUtilsTest {
 }
 ```
 
+- getData()로 추출한 엑셀 데이터
+
+![image2](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/master/images/excel/image2.png)
+
 - toList()로 생성한 데이터 화면
+
+![image3](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/master/images/excel/image3.png)
 
 
 - toFile("data/schools.sql") 로 생성한 data/schools.sql 파일 내용
+
+![image4](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/master/images/excel/image4.png)
