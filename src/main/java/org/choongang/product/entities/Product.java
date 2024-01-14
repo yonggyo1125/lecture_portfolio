@@ -75,4 +75,6 @@ public class Product extends BaseMember {
 
     @Transient
     private List<FileInfo> editorImages; // 에디터에 첨부한 이미지
+    
+    private int listOrder; // 진열 가중치
 }

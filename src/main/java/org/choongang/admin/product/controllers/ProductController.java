@@ -5,11 +5,14 @@ import lombok.RequiredArgsConstructor;
 import org.choongang.admin.menus.Menu;
 import org.choongang.admin.menus.MenuDetail;
 import org.choongang.commons.ExceptionProcessor;
+import org.choongang.commons.ListData;
 import org.choongang.commons.Utils;
 import org.choongang.commons.exceptions.AlertException;
 import org.choongang.file.service.FileInfoService;
 import org.choongang.product.constants.ProductStatus;
+import org.choongang.product.controllers.ProductSearch;
 import org.choongang.product.entities.Category;
+import org.choongang.product.entities.Product;
 import org.choongang.product.service.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -64,8 +67,13 @@ public class ProductController implements ExceptionProcessor {
      * @return
      */
     @GetMapping
-    public String list(Model model) {
+    public String list(ProductSearch form, Model model) {
         commonProcess("list", model);
+
+        ListData<Product> data = productInfoService.getList(form, true);
+
+        model.addAttribute("items", data.getItems());
+        model.addAttribute("pagination", data.getPagination());
 
         return "admin/product/list";
     }
