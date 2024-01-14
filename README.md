@@ -17,7 +17,7 @@
 ## 지역화
 - [국가별 언어 수동 변경](https://github.com/yonggyo1125/lecture_portfolio/blob/localization/LOCALIZATION.md)
 
-## 쇼핑몰 
+## [쇼핑몰](https://github.com/yonggyo1125/lecture_portfolio/tree/shopping-mall/shoppingmall) 
 
 - 상품
 - 장바구니
