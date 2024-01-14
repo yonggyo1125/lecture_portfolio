@@ -118,6 +118,185 @@ public interface CategoryRepository extends JpaRepository<Category, String>, Que
 
 ### 서비스 구성
 
+> product/service/CategorySaveService.java
+
+```java
+package org.choongang.product.service;
+
+import lombok.RequiredArgsConstructor;
+import org.choongang.admin.product.controllers.RequestCategory;
+import org.choongang.commons.Utils;
+import org.choongang.product.entities.Category;
+import org.choongang.product.repositories.CategoryRepository;
+import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class CategorySaveService {
+
+    private final CategoryRepository repository;
+    private final Utils utils;
+
+    public void save(RequestCategory form) {
+        Category category = new ModelMapper().map(form, Category.class);
+
+        repository.saveAndFlush(category);
+    }
+
+    /**
+     * 목록 조회
+     *
+     * @param chks : checkbox 선택 번호
+     */
+    public void saveList(List<Integer> chks) {
+        for (int chk : chks) {
+            String cateCd = utils.getParam("cateCd_" + chk);
+            Category category = repository.findById(cateCd).orElse(null);
+            if (category == null) continue;
+
+            category.setCateNm(utils.getParam("cateNm_" + chk));
+            category.setActive(Boolean.parseBoolean(utils.getParam("active_" + chk)));
+            category.setListOrder(Integer.parseInt(utils.getParam("listOrder_" + chk)));
+        }
+
+        repository.flush();
+    }
+
+}
+```
+
+> product/service/CategoryNotFoundException.java
+
+```java
+package org.choongang.product.service;
+
+import org.choongang.commons.Utils;
+import org.choongang.commons.exceptions.AlertBackException;
+import org.springframework.http.HttpStatus;
+
+public class CategoryNotFoundException extends AlertBackException {
+    public CategoryNotFoundException() {
+        super(Utils.getMessage("NotFound.product.category", "errors"), HttpStatus.NOT_FOUND);
+    }
+}
+```
+
+> product/service/CategoryInfoService.java
+
+```java 
+package org.choongang.product.service;
+
+import com.querydsl.core.BooleanBuilder;
+import lombok.RequiredArgsConstructor;
+import org.choongang.commons.exceptions.UnAuthorizedException;
+import org.choongang.member.MemberUtil;
+import org.choongang.product.entities.Category;
+import org.choongang.product.entities.QCategory;
+import org.choongang.product.repositories.CategoryRepository;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+import static org.springframework.data.domain.Sort.Order.asc;
+import static org.springframework.data.domain.Sort.Order.desc;
+
+@Service
+@RequiredArgsConstructor
+public class CategoryInfoService {
+
+    private final CategoryRepository categoryRepository;
+    private final MemberUtil memberUtil;
+
+    /**
+     * 분류 개별 조회
+     *
+     * @param cateCd
+     * @return
+     */
+    public Category get(String cateCd) {
+        Category category = categoryRepository.findById(cateCd)
+                .orElseThrow(CategoryNotFoundException::new);
+
+        // 관리자가 X, 미사용 중인 경우는 접근 불가
+        if (!memberUtil.isAdmin() && !category.isActive()) {
+            throw new UnAuthorizedException();
+        }
+
+        return category;
+    }
+
+    /**
+     * 분류 목록
+     *
+     * @param isAll : true - 미사용, 사용 전부 목록으로 조회(관리자)
+     *              : false - 사용중인 목록만 조회(프론트)
+     * @return
+     */
+    public List<Category> getList(boolean isAll) {
+        QCategory category = QCategory.category;
+        BooleanBuilder builder = new BooleanBuilder();
+
+        if (!isAll) { // 사용중인 분류만 조회
+            builder.and(category.active.eq(true));
+        }
+
+        List<Category> items = (List<Category>) categoryRepository.findAll(builder, Sort.by(desc("listOrder"), asc("createdAt")));
+
+        return items;
+    }
+
+    public List<Category> getList() {
+        return getList(false); // 사용중 목록(프론트)
+    }
+}
+
+```
+> product/service/CategoryDeleteService.java
+
+```java
+package org.choongang.product.service;
+
+import lombok.RequiredArgsConstructor;
+import org.choongang.commons.Utils;
+import org.choongang.product.entities.Category;
+import org.choongang.product.repositories.CategoryRepository;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class CategoryDeleteService {
+
+    private final Utils utils;
+    private final CategoryRepository categoryRepository;
+
+    /**
+     * 분류 개별 삭제
+     *
+     * @param cateCd : 분류 코드 
+     */
+    public void delete(String cateCd) {
+        Category category = categoryRepository.findById(cateCd).orElseThrow(CategoryNotFoundException::new);
+        categoryRepository.delete(category);
+
+        categoryRepository.flush();
+    }
+
+    /**
+     * 분류 목록 삭제
+     *
+     * @param chks : 목록 선택 순번
+     */
+    public void deleteList(List<Integer> chks) {
+        chks.forEach(chk -> delete(utils.getParam("cateCd_" + chk)));
+    }
+}
+```
 
 ### 관리자 컨트롤러 
 
@@ -192,6 +371,7 @@ import org.choongang.commons.ExceptionProcessor;
 import org.choongang.commons.Utils;
 import org.choongang.commons.exceptions.AlertException;
 import org.choongang.product.entities.Category;
+import org.choongang.product.service.CategoryDeleteService;
 import org.choongang.product.service.CategoryInfoService;
 import org.choongang.product.service.CategorySaveService;
 import org.springframework.http.HttpStatus;
@@ -212,7 +392,7 @@ public class ProductController implements ExceptionProcessor {
     private final CategoryValidator categoryValidator;
     private final CategorySaveService categorySaveService;
     private final CategoryInfoService categoryInfoService;
-
+    private final CategoryDeleteService categoryDeleteService;
 
     @ModelAttribute("menuCode")
     public String getMenuCode() {
@@ -316,6 +496,7 @@ public class ProductController implements ExceptionProcessor {
     public String categoryEdit(@RequestParam("chk") List<Integer> chks, Model model) {
         commonProcess("category", model);
 
+        categorySaveService.saveList(chks);
 
         // 수정 완료 -> 목록 갱신
         model.addAttribute("script", "parent.location.reload()");
@@ -323,8 +504,10 @@ public class ProductController implements ExceptionProcessor {
     }
 
     @DeleteMapping("/category")
-    public String categoryDelete(@RequestParam("chk") List<String> chks, Model model) {
+    public String categoryDelete(@RequestParam("chk") List<Integer> chks, Model model) {
         commonProcess("category", model);
+
+        categoryDeleteService.deleteList(chks);
 
         // 삭제 완료 후 -> 목록 새로고침
         model.addAttribute("script", "parent.location.reload()");
@@ -541,9 +724,25 @@ public class ProductController implements ExceptionProcessor {
 
 public class Utils {
     ...
-    
-    
+
+    /**
+     * 요청 데이터 가져오기 편의 함수
+     *
+     * @param name
+     * @return
+     */
+    public String getParam(String name) {
+        return request.getParameter(name);
+    }
+
+    public String[] getParams(String name) {
+        return request.getParameterValues(name);
+    }
 }
 ```
 
-## 상품 등록 / 수정
+
+
+## 상품 등록 
+
+## 상품 수정

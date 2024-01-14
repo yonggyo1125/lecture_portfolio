@@ -1,8 +1,8 @@
 package org.choongang.product.service;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.choongang.admin.product.controllers.RequestCategory;
+import org.choongang.commons.Utils;
 import org.choongang.product.entities.Category;
 import org.choongang.product.repositories.CategoryRepository;
 import org.modelmapper.ModelMapper;
@@ -15,7 +15,7 @@ import java.util.List;
 public class CategorySaveService {
 
     private final CategoryRepository repository;
-    private final HttpServletRequest request;
+    private final Utils utils;
 
     public void save(RequestCategory form) {
         Category category = new ModelMapper().map(form, Category.class);
@@ -30,8 +30,16 @@ public class CategorySaveService {
      */
     public void saveList(List<Integer> chks) {
         for (int chk : chks) {
+            String cateCd = utils.getParam("cateCd_" + chk);
+            Category category = repository.findById(cateCd).orElse(null);
+            if (category == null) continue;
 
+            category.setCateNm(utils.getParam("cateNm_" + chk));
+            category.setActive(Boolean.parseBoolean(utils.getParam("active_" + chk)));
+            category.setListOrder(Integer.parseInt(utils.getParam("listOrder_" + chk)));
         }
+
+        repository.flush();
     }
 
 }

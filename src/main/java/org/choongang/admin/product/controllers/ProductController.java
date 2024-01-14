@@ -8,6 +8,7 @@ import org.choongang.commons.ExceptionProcessor;
 import org.choongang.commons.Utils;
 import org.choongang.commons.exceptions.AlertException;
 import org.choongang.product.entities.Category;
+import org.choongang.product.service.CategoryDeleteService;
 import org.choongang.product.service.CategoryInfoService;
 import org.choongang.product.service.CategorySaveService;
 import org.springframework.http.HttpStatus;
@@ -28,7 +29,7 @@ public class ProductController implements ExceptionProcessor {
     private final CategoryValidator categoryValidator;
     private final CategorySaveService categorySaveService;
     private final CategoryInfoService categoryInfoService;
-
+    private final CategoryDeleteService categoryDeleteService;
 
     @ModelAttribute("menuCode")
     public String getMenuCode() {
@@ -140,8 +141,10 @@ public class ProductController implements ExceptionProcessor {
     }
 
     @DeleteMapping("/category")
-    public String categoryDelete(@RequestParam("chk") List<String> chks, Model model) {
+    public String categoryDelete(@RequestParam("chk") List<Integer> chks, Model model) {
         commonProcess("category", model);
+
+        categoryDeleteService.deleteList(chks);
 
         // 삭제 완료 후 -> 목록 새로고침
         model.addAttribute("script", "parent.location.reload()");
