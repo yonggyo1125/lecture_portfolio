@@ -28,7 +28,7 @@ public class CSVUtilsTest {
     @DisplayName("CSV 파일 변환 후 SQL 가공 함수 테스트")
     void test2() {
         String[] fields = { "location", "centerNm", "centerType", "address", "tel"};
-        List<String> sqlData = csvUtils.makeSql("data/data.csv", "CENTER_INFO", fields, "EUC-KR").toList();
+        List<String> sqlData = csvUtils.makeSql("data/data.csv", "CENTER_INFO", fields, "addField1, addField2", "addValue1, addValue2", "EUC-KR").toList();
 
         sqlData.forEach(System.out::println);
 
@@ -40,7 +40,7 @@ public class CSVUtilsTest {
 
         String destPath = "data/branch.sql";
         String[] fields = { "location", "centerNm", "centerType", "address", "tel"};
-        csvUtils.makeSql("data/data.csv", "CENTER_INFO", fields, "EUC-KR").toFile(destPath);
+        csvUtils.makeSql("data/data.csv", "CENTER_INFO", fields, "addField1, addField2", "addValue1, addValue2", "EUC-KR").toFile(destPath);
         File file = new File(destPath);
 
         assertTrue(file.exists());

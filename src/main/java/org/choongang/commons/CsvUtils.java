@@ -3,6 +3,7 @@ package org.choongang.commons;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -57,10 +58,12 @@ public class CsvUtils {
      * @param filePath : 파일 경로
      * @param tableNm : 테이블명  예) CENTER_INFO
      * @param fields : SQL 생성 필드 예) new String[] { "location", "centerNm", "centerType", "address", "tel"};
+     * @param addField : 추가 필드
+     * @param addValue : 추가 값
      * @param encoding : csv 파일 인코딩 : 윈도우즈 -  EUC-KR, 맥 - UTF-8
      * @return
      */
-    public CsvUtils makeSql(String filePath, String tableNm, String[] fields, String encoding) {
+    public CsvUtils makeSql(String filePath, String tableNm, String[] fields, String addField, String addValue, String encoding) {
         sqlData = new ArrayList<>();
 
         List<String[]> lines = getData(filePath, encoding);
@@ -74,8 +77,14 @@ public class CsvUtils {
             sb.append(tableNm);
             sb.append(" (");
             sb.append(Arrays.stream(fields).collect(Collectors.joining(",")));
+
+            if (StringUtils.hasText(addField)) sb.append(",").append(addField); // 추가 필드
+
             sb.append(" ) VALUES (");
             sb.append(Arrays.stream(line).map(s -> "\"" + s + "\"").collect(Collectors.joining(",")));
+
+            if (StringUtils.hasText(addValue)) sb.append(",").append(addValue);
+
             sb.append(");\n");
             sqlData.add(sb.toString());
         });
@@ -84,7 +93,7 @@ public class CsvUtils {
     }
 
     public CsvUtils makeSql(String filePath, String tableNm, String[] fields) {
-        return makeSql(filePath, tableNm, fields, "EUC-KR");
+        return makeSql(filePath, tableNm, fields, null, null, "EUC-KR");
     }
 
     /**
