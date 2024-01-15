@@ -9,7 +9,22 @@
 
     <ul class="products">
         <li th:if="${items != null && !items.isEmpty()}" th:each="item : ${items}" th:object="${item}" class="item">
+            <a class="image" th:href="@{/product/detail/{seq}(seq=*{seq})}">
+                <th:block th:if="*{listImages != null && !listImages.isEmpty()}" th:utext="*{@utils.printThumb(listImages[0].seq, 350, 350, 'goodsImage')}">
+                </th:block>
+                <th:block th:unless="*{listImages != null && !listImages.isEmpty()}">
+                    이미지 없음(이미지로 교체)
+                </th:block>
+            </a>
             <div class="productNm" th:text="*{name}"></div>
+            <del class="consumerPrice" th:if="*{consumerPrice > 0}">
+                <th:block th:text="*{consumerPrice > 1000 ? #numbers.formatInteger(consumerPrice, 3, 'COMMA') : consumerPrice}"></th:block>
+                <th:block th:text="#{원}"></th:block>
+            </del>
+            <div class="salePrice" th:if="*{salePrice > 0}">
+                <th:block th:text="*{salePrice > 1000 ? #numbers.formatInteger(salePrice, 3, 'COMMA') : salePrice}"></th:block>
+                <th:block th:text="#{원}"></th:block>
+            </div>
         </li>
         <li th:unless="${items != null && !items.isEmpty()}" th:text="#{조회된_상품이_없습니다.}"></li>
     </ul>

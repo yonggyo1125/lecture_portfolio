@@ -38,6 +38,14 @@ public class ProductController implements ExceptionProcessor {
         return utils.tpl("product/list");
     }
 
+    @GetMapping("/detail/{seq}")
+    public String detail(@PathVariable("seq") Long seq, Model model) {
+        Product product = productInfoService.get(seq);
+
+        model.addAttribute("product", product);
+
+        return utils.tpl("product/detail");
+    }
 
     /**
      * 상품 공통 처리
