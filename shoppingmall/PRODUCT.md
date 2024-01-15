@@ -2090,13 +2090,6 @@ public class ProductController implements ExceptionProcessor {
 </html>
 ```
 
-> resources/templates/front/product/detail.html
-
-
-```html
-
-```
-
 > resources/templates/front/product/_categories.html
 
 ```html
@@ -2123,4 +2116,302 @@ public class ProductController implements ExceptionProcessor {
         <th:block th:replace="~{front/product/_categories::menus}"></th:block>
     </header>
 </html>
+```
+
+## 사용자 - 상품 상세
+
+> product/controllers/ProductController.java
+
+```java
+...
+
+public class ProductController implements ExceptionProcessor {
+    ...
+
+    private final ProductInfoService productInfoService;
+    private final Utils utils;
+    
+    private Category category; // 상품 분류
+    private Product product; // 상품
+    
+    ...
+    
+    @GetMapping("/detail/{seq}")
+    public String detail(@PathVariable("seq") Long seq, Model model) {
+        commonProcess(seq, "detail", model);
+
+        return utils.tpl("product/detail");
+    }
+    
+    ...
+
+    /**
+     * 상품 공통 처리
+     *
+     * @param cateCd : 분류 코드 - 상품 목록
+     * @param mode
+     * @param model
+     */
+    private void commonProcess(String cateCd, String mode, Model model) {
+        category = categoryInfoService.get(cateCd);
+        String pageTitle = category.getCateNm();
+
+        mode = StringUtils.hasText(mode) ? mode : "list";
+
+        List<String> addCss = new ArrayList<>();
+        List<String> addScript = new ArrayList<>();
+
+        addCss.add("product/style"); // 상품 공통
+        if (mode.equals("detail")) { // 상품 상세
+            addScript.add("product/detail");
+
+            if (product != null) pageTitle = product.getName(); // 상품 상세인 경우 상품명으로 제목 표기
+        }
+        System.out.println("pageTitle : " + pageTitle);
+        model.addAttribute("addCss", addCss);
+        model.addAttribute("addScript", addScript);
+        model.addAttribute("category", category);
+        model.addAttribute("pageTitle", pageTitle);
+    }
+
+    /**
+     * 상품 공통 처리 - 상품 상세
+     *
+     * @param seq : 상품 번호
+     * @param mode
+     * @param model
+     */
+    private void commonProcess(Long seq, String mode, Model model) {
+        product = productInfoService.get(seq);
+        Category category = product.getCategory();
+        String cateCd = category == null ? null : category.getCateCd();
+
+        model.addAttribute("product", product);
+        commonProcess(cateCd, mode, model);
+    }
+}
+```
+
+> resources/messsages/commons.properties
+
+```properties
+...
+
+# 사용자 - 상품 상세
+소비자가=소비자가
+판매가=판매가
+할인가=할인가
+배송=배송
+개별배송=개별배송
+묶음배송=묶음배송
+배송비=배송비
+무료배송=무료배송
+총_상품금액=총 상품금액
+찜하기=찜하기
+장바구니=장바구니
+구매하기=구매하기
+상세=상세
+후기=후기
+문의=문의
+배송_교환반품=배송/교환반품
+```
+
+> resources/templates/front/product/detail.html
+
+
+```html
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{front/layouts/main}">
+<main layout:fragment="content" class="product_detail layout_width" th:object="${product}">
+    <section class="product_main">
+        <div class="product_images">
+            <div class="main_image">
+                <img th:if="*{mainImages != null && !mainImages.isEmpty()}" th:src="*{mainImages[0].fileUrl}">
+            </div>
+            <div class="thumbs" th:if="*{mainImages != null && !mainImages.isEmpty()}" >
+                <div th:each="thumb : *{mainImages}" th:style="${@utils.backgroundStyle(thumb)}" class='thumb' th:data-url="${thumb.fileUrl}"></div>
+            </div>
+            <!--// main_image -->
+        </div>
+        <div class="product_info">
+            <form name="frmSave" method="post" th:action="@{/cart/save}" autocomplete="off" target="ifrmProcess">
+                <input type="hidden" name="mode" value="cart">
+                <input type="hidden" name="seq" th:value="*{seq}">
+                <div th:text="*{name}"></div>
+
+                <dl th:if="*{consumerPrice > 0}">
+                    <dt th:text="#{소비자가}"></dt>
+                    <dd>
+                        <del>
+                            <th:block th:text="*{consumerPrice >= 1000 ? #numbers.formatInteger(consumerPrice, 3, 'COMMA') : consumerPrice}"></th:block>
+                            <th:block th:text="#{원}"></th:block>
+                        </del>
+                    </dd>
+                </dl>
+                <dl>
+                    <dt th:text="#{판매가}"></dt>
+                    <dd>
+                        <th:block th:text="*{salePrice >= 1000 ? #numbers.formatInteger(salePrice, 3, 'COMMA') : salePrice}"></th:block>
+                        <th:block th:text="#{원}"></th:block>
+                    </dd>
+                </dl>
+                <dl>
+                    <dt th:text="#{할인가}"></dt>
+                    <dd></dd>
+                </dl>
+                <dl>
+                    <dt th:text="#{배송}"></dt>
+                    <dd th:if="*{packageDelivery}" th:text="#{묶음배송}"></dd>
+                    <dd th:unless="*{packageDelivery}" th:text="#{개별배송}"></dd>
+                </dl>
+                <dl>
+                    <dt th:text="#{배송비}"></dt>
+                    <dd th:if="*{deliveryPrice > 0}">
+                        <th:block th:text="*{deliveryPrice >= 1000 ? #numbers.formatInteger(deliveryPrice, 3, 'COMMA') : deliveryPrice}"></th:block>
+                        <th:block th:text="#{원}"></th:block>
+                    </dd>
+                    <dd th:unless="*{deliveryPrice > 0}" th:text="#{무료배송}"></dd>
+                </dl>
+
+                <div class="summary">
+                    <div class="tit" th:text="#{총_상품금액}"></div>
+                    <div class="info">
+                        <span class="total_price" th:text="*{salePrice >= 1000 ? #numbers.formatInteger(salePrice, 3, 'COMMA') : salePrice}">
+                        </span>
+                        <th:block th:text="#{원}"></th:block>
+                    </div>
+                </div>
+                <!--// summary -->
+                <div class="btns">
+                    <button type="button" th:text="#{찜하기}" class="product_action" data-mode="wish"></button>
+                    <button type="button" th:text="#{장바구니}" class="product_action" data-mode="cart"></button>
+                    <button type="button" th:text="#{구매하기}" class="product_action"  data-mode="order"></button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <section class="product_desc">
+        <!-- 상세 설명 S -->
+        <ul class="tabs">
+            <li class="tab on">
+                <a href="#description"th:text="#{상세}"></a>
+            </li>
+            <li class="tab">
+                <a href="#review"th:text="#{후기}"></a>
+            </li>
+            <li class="tab">
+                <a href="#qna"th:text="#{문의}"></a>
+            </li>
+            <li class="tab">
+                <a href="#qna"th:text="#{배송_교환반품}"></a>
+            </li>
+        </ul>
+        <div id="description" class='desc_content' th:utext="*{description}"></div>
+        <!-- 상세 설명 E -->
+
+        <!-- 후기 영역 S -->
+        <ul class="tabs">
+            <li class="tab">
+                <a href="#description"th:text="#{상세}"></a>
+            </li>
+            <li class="tab on">
+                <a href="#review"th:text="#{후기}"></a>
+            </li>
+            <li class="tab">
+                <a href="#qna"th:text="#{문의}"></a>
+            </li>
+            <li class="tab">
+                <a href="#qna"th:text="#{배송_교환반품}"></a>
+            </li>
+        </ul>
+        <div id="review" class='desc_content'>
+            후기 영역...
+        </div>
+        <!-- 후기 영역 E -->
+
+        <!-- 문의 영역 S -->
+        <ul class="tabs">
+            <li class="tab">
+                <a href="#description"th:text="#{상세}"></a>
+            </li>
+            <li class="tab">
+                <a href="#review"th:text="#{후기}"></a>
+            </li>
+            <li class="tab on">
+                <a href="#qna"th:text="#{문의}"></a>
+            </li>
+            <li class="tab">
+                <a href="#qna"th:text="#{배송_교환반품}"></a>
+            </li>
+        </ul>
+        <div id="qna" class='desc_content'>
+            문의 영역...
+        </div>
+        <!-- 문의 영역 E -->
+
+        <!-- 배송/교환반품 영역 S -->
+        <ul class="tabs">
+            <li class="tab">
+                <a href="#description"th:text="#{상세}"></a>
+            </li>
+            <li class="tab">
+                <a href="#review"th:text="#{후기}"></a>
+            </li>
+            <li class="tab">
+                <a href="#qna"th:text="#{문의}"></a>
+            </li>
+            <li class="tab on">
+                <a href="#"th:text="#{배송_교환반품}"></a>
+            </li>
+        </ul>
+        <div id="guide" class='desc_content'>
+            배송/교환반품 영역...
+        </div>
+        <!-- 배송/교환반품 영역 E -->
+    </section>
+</main>
+</html>
+```
+
+> resources/static/front/product/css/style.css
+
+```css
+.product_detail .product_main { display: flex; margin-bottom: 100px; }
+.product_detail .product_main .product_images { width: 550px; margin-right: 30px; }
+.product_detail .product_main .main_image img { width: 100%; }
+.product_detail .product_main .product_info { flex-grow: 1; }
+.product_detail .thumbs { display: flex; height: 80px; margin-top: 10px; }
+.product_detail .thumbs .thumb { width: 80px; border: 1px solid #222; cursor: pointer; }
+.product_detail .thumbs .thumb + .thumb { margin-left: 3px; }
+
+.product_detail .tabs { display: flex; border-bottom: 2px solid #222; align-items: center; }
+.product_detail .tabs .tab > a { padding: 0 35px; min-width: 180px; height: 50px; line-height: 50px;  font-weight: 500; display: block; font-size: 1.2rem; color: #222; text-align: center; }
+.product_detail .tabs .tab { border-top: 1px solid #ccc; border-right: 1px solid #ccc; }
+.product_detail .tabs .tab:first-of-type { border-left: 1px solid #ccc; }
+.product_detail .tabs .tab.on { border-color: #222; background: #222 }
+.product_detail .tabs .tab.on a { color: #fff; }
+
+.product_detail .desc_content { margin: 25px 0 100px; }
+```
+
+> resources/static/front/product/js/detail.js
+
+```javascript
+window.addEventListener("DOMContentLoaded", function() {
+    /* 상품 메인 썸네일 이벤트 처리 S */
+    const thumbs = document.querySelectorAll(".thumbs .thumb");
+
+    const mainImage = document.querySelector(".product_images .main_image img");
+    if (mainImage) {
+        for (const el of thumbs) {
+            el.addEventListener("mouseenter", function() {
+                const url = this.dataset.url;
+                mainImage.src = url;
+            });
+        }
+    }
+    /* 상품 메인 썸네일 이벤트 처리 E */
+});
 ```
