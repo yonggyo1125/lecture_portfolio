@@ -13,5 +13,6 @@
 
             <a sec:authorize="hasAnyAuthority('ADMIN', 'MANAGER')" th:href="@{/admin}" th:text="#{사이트_관리}"></a>
         </th:block>
+        <th:block th:replace="~{front/product/_categories::menus}"></th:block>
     </header>
 </html>

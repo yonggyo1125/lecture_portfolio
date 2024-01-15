@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{front/layouts/main}">
+<main layout:fragment="content">
+    <h1>
+        <a th:href="@{/product/{cateCd}(cateCd=${category.cateCd})}" th:text="${category.cateNm}"></a>
+    </h1>
+
+    <ul class="products">
+        <li th:if="${items != null && !items.isEmpty()}" th:each="item : ${items}" th:object="${item}" class="item">
+            <div class="productNm" th:text="*{name}"></div>
+        </li>
+        <li th:unless="${items != null && !items.isEmpty()}" th:text="#{조회된_상품이_없습니다.}"></li>
+    </ul>
+    <th:block th:replace="~{common/_pagination::pagination}"></th:block>
+</main>
+</html>
+

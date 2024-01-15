@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="menus">
+<nav th:if="${categories != null && !categories.isEmpty()}">
+    <a th:each="item : ${categories}" th:object="${item}" th:href="@{/product/{cateCd}(cateCd=*{cateCd})}" th:text="*{cateNm}"></a>
+</nav>
+</th:block>
+</html>

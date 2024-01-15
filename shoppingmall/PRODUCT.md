@@ -1951,3 +1951,161 @@ public class ProductController implements ExceptionProcessor {
 }
 ```
 ## 상품 수정
+
+
+
+## 사용자 - 상품 목록
+
+> 상품 분류로 목록 출력 
+
+> product/controllers/ProductAdvice.java : 상품 공통 데이터
+
+```java 
+package org.choongang.product.controllers;
+
+import lombok.RequiredArgsConstructor;
+import org.choongang.product.entities.Category;
+import org.choongang.product.service.CategoryInfoService;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ModelAttribute;
+
+import java.util.List;
+
+@ControllerAdvice("org.choongang")
+@RequiredArgsConstructor
+public class ProductAdvice {
+    private final CategoryInfoService categoryInfoService;
+
+    /**
+     * 상품 분류는 사용자 페이지 전역에 유지 되므로 전역 속성으로 정의
+     * @return
+     */
+    @ModelAttribute("categories")
+    private List<Category> getCategories() {
+        return categoryInfoService.getList();
+    }
+
+}
+```
+
+> product/controllers/ProductController.java
+
+```java
+package org.choongang.product.controllers;
+
+import lombok.RequiredArgsConstructor;
+import org.choongang.commons.ExceptionProcessor;
+import org.choongang.commons.ListData;
+import org.choongang.commons.Utils;
+import org.choongang.product.entities.Category;
+import org.choongang.product.entities.Product;
+import org.choongang.product.service.CategoryInfoService;
+import org.choongang.product.service.ProductInfoService;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@RequestMapping("/product")
+@RequiredArgsConstructor
+public class ProductController implements ExceptionProcessor {
+
+    private final CategoryInfoService categoryInfoService;
+    private final ProductInfoService productInfoService;
+    private final Utils utils;
+
+    private Category category; // 상품 분류
+
+
+    @GetMapping("/{cateCd}")
+    public String list(@PathVariable("cateCd") String cateCd, ProductSearch search, Model model) {
+        commonProcess(cateCd, "list", model);
+
+        ListData<Product> data = productInfoService.getList(search, false);
+
+        model.addAttribute("items", data.getItems());
+        model.addAttribute("pagination", data.getPagination());
+
+        return utils.tpl("product/list");
+    }
+
+
+    /**
+     * 상품 공통 처리
+     *
+     * @param cateCd : 분류 코드
+     * @param mode
+     * @param model
+     */
+    private void commonProcess(String cateCd, String mode, Model model) {
+        category = categoryInfoService.get(cateCd);
+        String pageTitle = category.getCateNm();
+
+
+
+        model.addAttribute("category", category);
+        model.addAttribute("pageTitle", pageTitle);
+    }
+}
+```
+
+> resources/templates/front/product/list.html
+
+
+```html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{front/layouts/main}">
+<main layout:fragment="content">
+    <h1>
+        <a th:href="@{/product/{cateCd}(cateCd=${category.cateCd})}" th:text="${category.cateNm}"></a>
+    </h1>
+
+    <ul class="products">
+        <li th:if="${items != null && !items.isEmpty()}" th:each="item : ${items}" th:object="${item}" class="item">
+            <div class="productNm" th:text="*{name}"></div>
+        </li>
+        <li th:unless="${items != null && !items.isEmpty()}" th:text="#{조회된_상품이_없습니다.}"></li>
+    </ul>
+    <th:block th:replace="~{common/_pagination::pagination}"></th:block>
+</main>
+</html>
+```
+
+> resources/templates/front/product/detail.html
+
+
+```html
+
+```
+
+> resources/templates/front/product/_categories.html
+
+```html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="menus">
+<nav th:if="${categories != null && !categories.isEmpty()}">
+    <a th:each="item : ${categories}" th:object="${item}" th:href="@{/product/{cateCd}(cateCd=*{cateCd})}" th:text="*{cateNm}"></a>
+</nav>
+</th:block>
+</html>
+```
+
+
+> resources/templates/front/outlines/header.html
+
+```html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <header th:fragment="common">
+        ...
+        
+        <th:block th:replace="~{front/product/_categories::menus}"></th:block>
+    </header>
+</html>
+```
