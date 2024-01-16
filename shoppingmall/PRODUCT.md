@@ -1380,7 +1380,7 @@ public class ProductController implements ExceptionProcessor {
     <div class="mb10">
         <textarea name="description" th:field="*{description}" id="description"></textarea>
     </div>
-    <button type="button" class="sbtn upload_files" data-location="editor" data-image-only="true" data-single-file="true">
+    <button type="button" class="sbtn upload_files" data-location="editor" data-image-only="true">
         <i class="xi-image"></i>
         이미지 추가
     </button>
@@ -1434,6 +1434,7 @@ function callbackFileUpload(files) {
     const listImageEl = document.getElementById("list_files");
     const editorImageEl = document.getElementById("editor_files");
 
+    const imageUrls = []; // 에디터 이미지
     for (const file of files) {
         const location = file.location;
         let targetEl, html;
@@ -1449,7 +1450,7 @@ function callbackFileUpload(files) {
             default :
                 html = editorTpl;
                 targetEl = editorImageEl;
-                insertImage(editor, file.fileUrl); // 에디터에 이미지 추가
+                imageUrls.push(file.fileUrl);
         }
 
          /* 템플릿 데이터 치환 S */
@@ -1459,7 +1460,6 @@ function callbackFileUpload(files) {
 
          const dom = domParser.parseFromString(html, "text/html");
          const fileBox = location == 'editor' ? dom.querySelector(".file_tpl_box") :  dom.querySelector(".image1_tpl_box")
-         console.log(fileBox);
          targetEl.appendChild(fileBox);
 
 
@@ -1470,6 +1470,8 @@ function callbackFileUpload(files) {
          }
          /* 템플릿 데이터 치환 E */
     }
+
+    insertImage(imageUrls);
 }
 
 
@@ -1641,6 +1643,10 @@ public class ProductController implements ExceptionProcessor {
 </html>
 ```
 
+적용 화면
+
+![image1](https://raw.githubusercontent.com/yonggyo1125/lecture_portfolio/shopping-mall/images/shopping_mall/image1.png)
+
 
 ### 서비스 구현 
 
@@ -1670,6 +1676,8 @@ package org.choongang.product.service;
 
 import lombok.RequiredArgsConstructor;
 import org.choongang.admin.product.controllers.RequestProduct;
+import org.choongang.commons.Utils;
+import org.choongang.commons.exceptions.AlertException;
 import org.choongang.file.service.FileUploadService;
 import org.choongang.product.constants.DiscountType;
 import org.choongang.product.constants.ProductStatus;
@@ -1678,8 +1686,11 @@ import org.choongang.product.entities.Product;
 import org.choongang.product.repositories.CategoryRepository;
 import org.choongang.product.repositories.ProductOptionRepository;
 import org.choongang.product.repositories.ProductRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -1689,6 +1700,8 @@ public class ProductSaveService {
     private final ProductOptionRepository productOptionRepository;
     private final FileUploadService fileUploadService;
     private final CategoryRepository categoryRepository;
+    private final Utils utils;
+
     public void save(RequestProduct form) {
 
         String mode = form.getMode();
@@ -1729,9 +1742,38 @@ public class ProductSaveService {
         product.setUseOption(form.isUseOption());
         product.setOptionName(form.getOptionName());
 
+        productRepository.saveAndFlush(product);
+
         fileUploadService.processDone(product.getGid());
     }
+
+    /**
+     * 상품 목록 수정
+     *
+     * @param chks
+     */
+    public void saveList(List<Integer> chks) {
+        if (chks == null || chks.isEmpty()) {
+            throw new AlertException("수정할 상품을 선택하세요.", HttpStatus.BAD_REQUEST);
+        }
+
+        for (int chk : chks) {
+            Long seq = Long.valueOf(utils.getParam("seq_" + chk));
+
+            Product product = productRepository.findById(seq).orElse(null);
+            if (product == null) continue;
+
+            boolean active = Boolean.valueOf(utils.getParam("active_" + chk));
+            int listOrder = Integer.parseInt(utils.getParam("listOrder_" + chk));
+
+            product.setActive(active);
+            product.setListOrder(listOrder);
+        }
+
+        productRepository.flush();
+    }
 }
+
 ```
 
 > product/controllers/ProductSearch.java 
@@ -1990,9 +2032,49 @@ public class ProductController implements ExceptionProcessor {
 
     private final ProductSaveService productSaveService;
     private final ProductInfoService productInfoService;
+    private final ProductDeleteService productDeleteService;
     
     ...
 
+
+    /**
+     * 상품 목록에서 수정
+     *
+     * @param chks : 선택 번호
+     * @param model
+     * @return
+     */
+    @PatchMapping
+    public String editList(@ModelAttribute("chk") List<Integer> chks, Model model) {
+        commonProcess("list", model);
+
+        productSaveService.saveList(chks);
+
+        // 수정 후 새로고침
+        model.addAttribute("script", "parent.location.reload();");
+        return "common/_execute_script";
+    }
+
+    /**
+     * 상품 목록에서 삭제
+     *
+     * @param chks : 선택 번호
+     * @param model
+     * @return
+     */
+    @DeleteMapping
+    public String deleteList(@ModelAttribute("chk") List<Integer> chks, Model model) {
+        commonProcess("list", model);
+
+        productDeleteService.deleteList(chks);
+
+        // 삭제 후 새로고침
+        model.addAttribute("script", "parent.location.reload();");
+        return "common/_execute_script";
+    }
+    
+    ...
+    
     /**
      * 상품 등록, 수정 처리
      *
