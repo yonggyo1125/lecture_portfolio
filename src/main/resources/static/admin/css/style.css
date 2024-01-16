@@ -66,6 +66,9 @@ select { border: 1px solid #d5d5d5; height: 35px; }
 .submit_btns .btn { display: inline-block; min-width: 200px; height: 45px; padding: 0 15px; border: 1px solid #222; background: #fff; font-size: 1.4rem; font-weight: 500; color: #222; border-radius: 3px; cursor: pointer; line-height: 43px; }
 .submit_btns .btn:last-of-type { background: #222; color: #fff; }
 
+.search_btn { text-align: center; margin: 20px 0 30px; }
+.search_btn .btn { display: inline-block; min-width: 200px; text-align: center; font-size:1.4rem; font-weight: 500; height: 45px; line-height: 45px; background: #596b99; color: #fff; cursor: pointer; border-radius: 3px; border: 0; }
+
 .sbtn { border: 1px solid #222; color: #222; background: #fff; display: inline-block; padding: 7px 20px; border-radius: 3px; cursor: pointer; line-height: 1; }
 .sbtn:hover, .sbtn.on { background: #596b99; color: #fff; border-color: #596b99; }
 .sbtn i { color: #222; font-size: 1.1rem; vertical-align: middle; line-height: 1; }

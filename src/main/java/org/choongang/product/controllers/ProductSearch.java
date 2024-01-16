@@ -1,6 +1,7 @@
 package org.choongang.product.controllers;
 
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -16,6 +17,9 @@ public class ProductSearch {
 
     private List<String> statuses; // 상품 상태
 
+    @DateTimeFormat(pattern="yyyy-MM-dd")
     private LocalDate sdate; // 날짜 검색 시작
+
+    @DateTimeFormat(pattern="yyyy-MM-dd")
     private LocalDate edate; // 날짜 검색 종료
 }
