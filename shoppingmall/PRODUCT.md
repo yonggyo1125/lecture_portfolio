@@ -1534,45 +1534,107 @@ public class ProductController implements ExceptionProcessor {
 <section layout:fragment="content">
     <h1>상품 관리</h1>
     <h2>상품 검색</h2>
+    <form name="frmSearch" method="get" th:action="@{/admin/product}" autocomplete="off" th:object="${productSearch}">
+        <table class="table_cols">
+            <tr>
+                <th width="120">상품분류</th>
+                <td colspan="3">
+                    <th:block th:each="c, status : ${categories}">
+                        <input type="checkbox" name="cateCd" th:value="${c.cateCd}" th:field="*{cateCd}" th:id="${'cateCd_' + status.index}">
+                        <label th:for="${'cateCd_' + status.index}" th:text="${c.cateNm}"></label>
+                    </th:block>
+                </td>
+            </tr>
+            <tr>
+                <th>등록일</th>
+                <td width="300">
+                    <input type="date" name="sdate" th:field="*{sdate}"> ~
+                    <input type="date" name="edate" th:field="*{edate}">
+                </td>
+                <th width="120">상품상태</th>
+                <td>
+                    <th:block th:each="s, status : ${productStatuses}">
+                        <input type="checkbox" name="statuses" th:value="${s[0]}" th:field="*{statuses}" th:id="${'statuses_' + status.index}">
+                        <label th:for="${'statuses_' + status.index}" th:text="${s[1]}"></label>
+                    </th:block>
+                </td>
+            </tr>
+            <tr>
+                <th>상품명</th>
+                <td>
+                    <input type="text" name="name" th:field="*{name}">
+                </td>
+                <th>상품번호</th>
+                <td>
+                    <input type="number" name="seq" th:field="*{seq}">
+                </td>
+            </tr>
+        </table>
+        <div class="search_btn">
+            <button type="submit" class="btn">검색하기</button>
+        </div>
+    </form>
 
     <h2>상품 목록</h2>
     <form name="frmList" method="post" th:action="@{/admin/product}" target="ifrmProcess" autocomplete="off">
+        <input type="hidden" name="_method" value="PATCH">
         <table class="table_rows">
             <thead>
-                <tr>
-                    <th width="40">
-                        <input type="checkbox" class="checkall" id="checkall" data-target-name="chk">
-                        <label for="checkall"></label>
-                    </th>
-                    <th width="150">상품번호</th>
-                    <th nowrap colspan="2">상품명</th>
-                    <th width="150">노출여부</th>
-                    <th width="150">진열가중치</th>
-                    <th width="250"></th>
-                </tr>
+            <tr>
+                <th width="40">
+                    <input type="checkbox" class="checkall" id="checkall" data-target-name="chk">
+                    <label for="checkall"></label>
+                </th>
+                <th width="100">상품번호</th>
+                <th nowrap colspan="2">상품명</th>
+                <th width="100">노출여부</th>
+                <th width="120">진열가중치</th>
+                <th width="250"></th>
+            </tr>
             </thead>
             <tbody>
-                <tr th:if="${items == null || items.isEmpty()}">
-                    <td colspan="7" class="no_data">조회된 상품이 없습니다.</td>
-                </tr>
-                <tr th:unless="${items == null || items.isEmpty()}" th:each="item, status : ${items}" th:object="${item}">
-                    <td>
-                        <input type="hidden" th:name="${'seq_' + status.index}" th:value="*{seq}">
-                        <input type="checkbox" name="chk" th:value="${status.index}" th:id="${'chk_' + status.index}">
-                        <label th:for="${'chk_' + status.index}"></label>
-                    </td>
-                    <td th:text="*{seq}"></td>
-                    <td width="80">이미지</td>
-                    <td th:text="*{name}"></td>
-                    <td></td>
-                    <td></td>
-                    <td>
-                        <a th:href="@{/admin/product/edit/{seq}(seq=*{seq})}" class="sbtn">수정하기</a>
-                        <a th:href="@{/product/detail/{seq}(seq=*{seq})}" class="sbtn on" target="_blank">미리보기</a>
-                    </td>
-                </tr>
+            <tr th:if="${items == null || items.isEmpty()}">
+                <td colspan="7" class="no_data">조회된 상품이 없습니다.</td>
+            </tr>
+            <tr th:unless="${items == null || items.isEmpty()}" th:each="item, status : ${items}" th:object="${item}">
+                <td>
+                    <input type="hidden" th:name="${'seq_' + status.index}" th:value="*{seq}">
+                    <input type="checkbox" name="chk" th:value="${status.index}" th:id="${'chk_' + status.index}">
+                    <label th:for="${'chk_' + status.index}"></label>
+                </td>
+                <td th:text="*{seq}"></td>
+                <td width="80">
+                    <a class="image" th:href="@{/product/detail/{seq}(seq=*{seq})}" target="_blank">
+                        <th:block th:if="*{listImages != null && !listImages.isEmpty()}" th:utext="*{@utils.printThumb(listImages[0].seq, 50, 50, 'goodsImage')}">
+                        </th:block>
+                        <th:block th:unless="*{listImages != null && !listImages.isEmpty()}">
+                            이미지 없음
+                        </th:block>
+                    </a>
+                </td>
+                <td th:text="*{name}"></td>
+                <td align="center">
+                    <select th:name="${'active_' + status.index}">
+                        <option value="true" th:selecetd="*{active}">노출</option>
+                        <option value="false" th:selecetd="*{!active}">미노출</option>
+                    </select>
+
+                </td>
+                <td>
+                    <input type="number" th:name="${'listOrder_' + status.index}" th:value="*{listOrder}">
+                </td>
+                <td>
+                    <a th:href="@{/admin/product/edit/{seq}(seq=*{seq})}" class="sbtn">수정하기</a>
+                    <a th:href="@{/product/detail/{seq}(seq=*{seq})}" class="sbtn on" target="_blank">미리보기</a>
+                </td>
+            </tr>
             </tbody>
         </table>
+        <div class="table_actions">
+            <button type="button" class="sbtn form_action" data-mode="delete" data-form-name="frmList">선택 상품 삭제하기</button>
+            <button type="button" class="sbtn on form_action" data-mode="edit" data-form-name="frmList">선택 상품 수정하기</button>
+        </div>
+        <!--// table_actions -->
     </form>
     <th:block th:replace="~{common/_pagination::pagination}"></th:block>
 </section>
@@ -1678,6 +1740,7 @@ public class ProductSaveService {
 package org.choongang.product.controllers;
 
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -1693,7 +1756,10 @@ public class ProductSearch {
 
     private List<String> statuses; // 상품 상태
 
+    @DateTimeFormat(pattern="yyyy-MM-dd")
     private LocalDate sdate; // 날짜 검색 시작
+
+    @DateTimeFormat(pattern="yyyy-MM-dd")
     private LocalDate edate; // 날짜 검색 종료
 }
 ```
