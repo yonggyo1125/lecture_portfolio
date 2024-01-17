@@ -34,6 +34,7 @@ function callbackFileUpload(files) {
     const listImageEl = document.getElementById("list_files");
     const editorImageEl = document.getElementById("editor_files");
 
+    const imageUrls = []; // 에디터 이미지
     for (const file of files) {
         const location = file.location;
         let targetEl, html;
@@ -49,7 +50,7 @@ function callbackFileUpload(files) {
             default :
                 html = editorTpl;
                 targetEl = editorImageEl;
-                insertImage(editor, file.fileUrl); // 에디터에 이미지 추가
+                imageUrls.push(file.fileUrl);
         }
 
          /* 템플릿 데이터 치환 S */
@@ -59,7 +60,6 @@ function callbackFileUpload(files) {
 
          const dom = domParser.parseFromString(html, "text/html");
          const fileBox = location == 'editor' ? dom.querySelector(".file_tpl_box") :  dom.querySelector(".image1_tpl_box")
-         console.log(fileBox);
          targetEl.appendChild(fileBox);
 
 
@@ -70,6 +70,8 @@ function callbackFileUpload(files) {
          }
          /* 템플릿 데이터 치환 E */
     }
+
+    insertImage(imageUrls);
 }
 
 

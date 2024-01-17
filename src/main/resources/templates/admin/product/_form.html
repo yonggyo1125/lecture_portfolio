@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <th:block th:fragment="form" th:object="${requestProduct}">
     <input type="hidden" name="gid" th:field="*{gid}">
     <h2>기본 정보</h2>
@@ -170,17 +171,20 @@
         </tr>
         <tr>
             <th>옵션목록</th>
-            <td></td>
+            <td>
+
+            </td>
         </tr>
     </table>
     <h2>상세 설명</h2>
     <div class="mb10">
         <textarea name="description" th:field="*{description}" id="description"></textarea>
     </div>
-    <button type="button" class="sbtn upload_files" data-location="editor" data-image-only="true" data-single-file="true">
+    <button type="button" class="sbtn upload_files" data-location="editor" data-image-only="true">
         <i class="xi-image"></i>
         이미지 추가
     </button>
+
     <div class="uploaded_files" id="editor_files">
         <th:block th:each="item : *{editorImages}">
             <span th:replace="~{common/_editor_file::item}"></span>

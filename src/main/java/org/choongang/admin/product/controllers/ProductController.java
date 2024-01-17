@@ -37,6 +37,8 @@ public class ProductController implements ExceptionProcessor {
     private final FileInfoService fileInfoService;
     private final ProductSaveService productSaveService;
     private final ProductInfoService productInfoService;
+    private final ProductDeleteService productDeleteService;
+
 
     @ModelAttribute("menuCode")
     public String getMenuCode() {
@@ -76,6 +78,42 @@ public class ProductController implements ExceptionProcessor {
         model.addAttribute("pagination", data.getPagination());
 
         return "admin/product/list";
+    }
+
+    /**
+     * 상품 목록에서 수정
+     * 
+     * @param chks : 선택 번호
+     * @param model
+     * @return
+     */
+    @PatchMapping
+    public String editList(@ModelAttribute("chk") List<Integer> chks, Model model) {
+        commonProcess("list", model);
+
+        productSaveService.saveList(chks);
+
+        // 수정 후 새로고침
+        model.addAttribute("script", "parent.location.reload();");
+        return "common/_execute_script";
+    }
+
+    /**
+     * 상품 목록에서 삭제
+     * 
+     * @param chks : 선택 번호
+     * @param model
+     * @return
+     */
+    @DeleteMapping
+    public String deleteList(@ModelAttribute("chk") List<Integer> chks, Model model) {
+        commonProcess("list", model);
+
+        productDeleteService.deleteList(chks);
+
+        // 삭제 후 새로고침
+        model.addAttribute("script", "parent.location.reload();");
+        return "common/_execute_script";
     }
 
     /**
@@ -131,6 +169,7 @@ public class ProductController implements ExceptionProcessor {
         commonProcess("edit", model);
 
         RequestProduct form = productInfoService.getForm(seq);
+        System.out.println(form);
         model.addAttribute("requestProduct", form);
 
         return "admin/product/edit";
