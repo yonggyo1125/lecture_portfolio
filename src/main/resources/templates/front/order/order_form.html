@@ -5,5 +5,10 @@
 <main layout:fragment="content">
     <h1 th:text="#{주문서_작성}"></h1>
 
+    <form name="frmOrder" method="post" th:action="@{/order}" autocomplete="off" th:object="${cartData}">
+
+        <th:block th:replace="~{front/cart/_items::items}"></th:block>
+
+    </form>
 </main>
 </html>

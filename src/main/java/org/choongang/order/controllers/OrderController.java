@@ -34,11 +34,11 @@ public class OrderController implements ExceptionProcessor {
      */
     @GetMapping
     public String order(@RequestParam(name="seq", required = false) List<Long> seq, Model model) {
+        commonProcess("order", model);
 
         CartType mode = seq == null || seq.isEmpty() ? CartType.DIRECT : CartType.CART;
         CartData data = cartInfoService.getCartInfo(mode, seq);
 
-        System.out.println(data);
 
         model.addAttribute("cartData", data);
 
@@ -53,5 +53,6 @@ public class OrderController implements ExceptionProcessor {
      */
     private void commonProcess(String mode, Model model) {
 
+        model.addAttribute("mode", mode);
     }
 }
