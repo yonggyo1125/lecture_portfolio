@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.Errors;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,6 +46,16 @@ public class CartController implements ExceptionProcessor {
         return "common/_execute_script";
     }
 
+
+    /**
+     * 장바구니 상품 목록
+     *
+     * @return
+     */
+    @GetMapping
+    public String cart() {
+
+    }
 
 
     private void commonProcess(String mode, Model model) {

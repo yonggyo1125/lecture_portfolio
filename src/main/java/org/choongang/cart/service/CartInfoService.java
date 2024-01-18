@@ -37,6 +37,13 @@ public class CartInfoService {
         BooleanBuilder andBuilder = new BooleanBuilder();
         andBuilder.and(cartInfo.mode.eq(mode));
 
+        if (memberUtil.isLogin()) { // 회원
+            andBuilder.and(cartInfo.member.eq(memberUtil.getMember()));
+        } else { // 비회원 -> uid,
+            andBuilder.and(cartInfo.uid.eq(utils.cartUid()));
+        }
+
+
         List<CartInfo> items = (List<CartInfo>)cartInfoRepository.findAll(andBuilder, Sort.by(asc("createdAt")));
 
         return items;
