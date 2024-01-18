@@ -60,6 +60,28 @@
                         <th:block th:text="#{원}"></th:block>
                     </div>
                 </div>
+
+
+                <div class="selected_products">
+                    <input type="hidden" name="selected_nums" value="0">
+                    <div class="product_name" th:text="*{name}"></div>
+
+                    <div class="option_ea">
+                        <div class="ea_box">
+                            <input type="number" name="ea_0" value="1" min="1">
+                            <button type="button" class="change_ea down">
+                                <i class="xi-minus"></i>
+                            </button>
+                            <button type="button" class="change_ea up">
+                                <i class="xi-plus"></i>
+                            </button>
+                        </div>
+                        <!--// ea_box -->
+                    </div>
+                    <!--// option_ea -->
+                </div>
+                <!--// selected_products -->
+
                 <!--// summary -->
                 <div class="btns">
                     <button type="button" th:text="#{찜하기}" class="product_action" data-mode="wish"></button>
