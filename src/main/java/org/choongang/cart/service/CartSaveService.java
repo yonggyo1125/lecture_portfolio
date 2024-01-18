@@ -30,7 +30,7 @@ public class CartSaveService {
 
         Long seq = form.getSeq(); // 상품 번호
         String mode = form.getMode(); //
-        int uid = utils.cartUid();
+        int uid = memberUtil.isLogin() ? 0 : utils.cartUid();
         Member member = memberUtil.getMember();
         Product product = productInfoService.get(seq); // 상품 엔티티
 

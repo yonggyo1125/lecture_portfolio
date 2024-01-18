@@ -1,6 +1,9 @@
 package org.choongang.cart.controllers;
 
 import lombok.RequiredArgsConstructor;
+import org.choongang.cart.constants.CartType;
+import org.choongang.cart.service.CartData;
+import org.choongang.cart.service.CartInfoService;
 import org.choongang.cart.service.CartSaveService;
 import org.choongang.commons.ExceptionProcessor;
 import org.choongang.commons.Utils;
@@ -19,6 +22,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class CartController implements ExceptionProcessor {
 
     private final CartSaveService cartSaveService;
+    private final CartInfoService cartInfoService;
+    private final Utils utils;
+
 
     @ModelAttribute("pageTitle")
     public String getPageTitle() {
@@ -53,8 +59,14 @@ public class CartController implements ExceptionProcessor {
      * @return
      */
     @GetMapping
-    public String cart() {
+    public String cart(Model model) {
+        commonProcess("list", model);
 
+        CartData cartData = cartInfoService.getCartInfo(CartType.CART);
+
+        model.addAttribute("cartData", cartData);
+
+        return utils.tpl("cart/list");
     }
 
 
