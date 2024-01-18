@@ -5,7 +5,7 @@ const recipeForm = {
     */
     addItem(e) {
         const el = e.currentTarget;
-        const name =
+
     },
     /**
     * 입력항목 제거
