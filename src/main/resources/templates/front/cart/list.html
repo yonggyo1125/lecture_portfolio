@@ -32,7 +32,11 @@
                         <input type="checkbox" name="chk" th:value="${status.index}" th:id="${'chk_' + status.index}">
                         <label th:for="${'chk_' + status.index}"></label>
                     </td>
-                    <td></td>
+                    <td>
+                        <a th:href="@{/product/detail/{seq}(seq=*{product.seq})}">
+                            <th:block th:utext="*{@utils.printThumb(listImage, 50, 50, 'product_image')}"></th:block>
+                        </a>
+                    </td>
                     <td>
                         <div class="product_name" th:text="*{product.name}"></div>
                     </td>
@@ -60,6 +64,21 @@
                 </tr>
             </tbody>
         </table>
+        <div th:if="*{items != null && !items.isEmpty()}" class="cart_summary">
+            <th:block th:text="*{totalPrice >= 1000 ? #numbers.formatInteger(totalPrice, 3, 'COMMA') : totalPrice}"></th:block>(<th:block th:text="#{상품합계}"></th:block>)
+
+            <i class="xi-plus"></i>
+
+            <th:block th:text="*{totalDeliveryPrice >= 1000 ? #numbers.formatInteger(totalDeliveryPrice, 3, 'COMMA') : totalDeliveryPrice}"></th:block>(<th:block th:text="#{배송비}"></th:block>)
+
+            <i class="xi-minus"></i>
+
+            <th:block th:text="*{totalDiscount >= 1000 ? #numbers.formatInteger(totalDiscount, 3, 'COMMA') : totalDiscount}"></th:block>(<th:block th:text="#{할인합계}"></th:block>)
+
+            <i>=</i>
+
+            <th:block th:text="*{payPrice >= 1000 ? #numbers.formatInteger(payPrice, 3, 'COMMA') : payPrice}"></th:block>(<th:block th:text="#{결제금액}"></th:block>)
+        </div>
     </form>
 </main>
 </html>
