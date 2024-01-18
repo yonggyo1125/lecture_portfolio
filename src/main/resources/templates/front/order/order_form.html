@@ -7,8 +7,37 @@
 
     <form name="frmOrder" method="post" th:action="@{/order}" autocomplete="off" th:object="${cartData}">
 
+        <h2 th:text="#{주문_상품}"></h2>
+
         <th:block th:replace="~{front/cart/_items::items}"></th:block>
 
+        <h2 th:text="#{주문자_정보}"></h2>
+
+        <dl>
+            <dt th:text="#{주문자명}"></dt>
+            <dd>
+                <input type="text" name="orderName">
+            </dd>
+        </dl>
+        <dl>
+            <dt th:text="#{휴대전화번호}"></dt>
+            <dd>
+                <input type="text" name="orderCellPhone">
+            </dd>
+        </dl>
+
+        <dl>
+            <dt th:text="#{이메일}"></dt>
+            <dd>
+                <input type="text" name="orderEmail">
+            </dd>
+        </dl>
+
+        <h2 th:text="#{받는분_정보}"></h2>
+
+        <h2 th:text="#{결제_정보}"></h2>
+
+        <h2 th:text="#{약관_동의}"></h2>
     </form>
 </main>
 </html>
