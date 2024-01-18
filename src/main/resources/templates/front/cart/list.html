@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{front/layouts/main}">
+<main layout:fragment="content">
+    <h1 th:text="#{장바구니}"></h1>
+    <form name="frmCart" method="post" th:action="@{/cart}" autocomplete="off" target="ifrmProcess" th:object="${cartData}">
+        <input type="hidden" name="mode" value="edit">
+
+        <th:block th:replace="~{front/cart/_items::items}"></th:block>
+
+        <div class="action_btns">
+            <button type="button" class="cart_action" data-mode="delete" th:text="#{선택_상품_삭제}"></button>
+            <button type="button" class="cart_action" data-mode="delete_all" th:text="#{전체_상품_삭제}"></button>
+
+            <button type="button" class="cart_action" data-mode="edit" th:text="#{선택_상품_수정}"></button>
+
+            <button type="button" class="cart_action" data-mode="order" th:text="#{선택_상품_주문}"></button>
+            <button type="button" class="cart_action" data-mode="order_all" th:text="#{전체_상품_주문}"></button>
+        </div>
+    </form>
+</main>
+</html>
