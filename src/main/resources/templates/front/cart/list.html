@@ -5,8 +5,7 @@
 <main layout:fragment="content">
     <h1 th:text="#{장바구니}"></h1>
     <form name="frmCart" method="post" th:action="@{/cart}" autocomplete="off" target="ifrmProcess" th:object="${cartData}">
-        <input type="hidden" name="_method" value="PATCH">
-
+        <input type="hidden" name="mode" value="edit">
         <table class="cart_items">
             <thead>
                 <tr>
@@ -78,6 +77,16 @@
             <i>=</i>
 
             <th:block th:text="*{payPrice >= 1000 ? #numbers.formatInteger(payPrice, 3, 'COMMA') : payPrice}"></th:block>(<th:block th:text="#{결제금액}"></th:block>)
+        </div>
+        <!--// cart_summary -->
+        <div class="action_btns">
+            <button type="button" class="cart_action" data-mode="delete" th:text="#{선택_상품_삭제}"></button>
+            <button type="button" class="cart_action" data-mode="delete_all" th:text="#{전체_상품_삭제}"></button>
+
+            <button type="button" class="cart_action" data-mode="edit" th:text="#{선택_상품_수정}"></button>
+
+            <button type="button" class="cart_action" data-mode="order" th:text="#{선택_상품_주문}"></button>
+            <button type="button" class="cart_action" data-mode="order_all" th:text="#{전체_상품_주문}"></button>
         </div>
     </form>
 </main>
