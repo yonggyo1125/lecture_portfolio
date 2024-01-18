@@ -16,6 +16,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.springframework.data.domain.Sort.Order.asc;
 
@@ -166,5 +167,19 @@ public class CartInfoService {
 
     public CartData getCartInfo(List<Long> seq) {
         return getCartInfo(null, seq);
+    }
+
+    /**
+     * 장바구니 -> 주문서
+     *
+     * @param chks
+     * @return
+     */
+    public String getOrderUrl(List<Integer> chks) {
+        String qs = chks.stream()
+                .map(chk -> utils.getParam("seq_" + chk))
+                .map(s -> "seq=" + s).collect(Collectors.joining("&"));
+
+        return "/order?" + qs;
     }
 }

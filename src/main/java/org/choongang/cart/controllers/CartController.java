@@ -74,7 +74,9 @@ public class CartController implements ExceptionProcessor {
     @PostMapping
     public String cartPs(@RequestParam("chk") List<Integer> chks,
                          @RequestParam("mode") String mode, Model model) {
-
+        
+        String script = "parent.location.reload()"; // 부모창 새로고침
+        
         if (mode.equals("edit")) { // 장바구니 상품 목록 수정
 
             cartSaveService.saveList(chks);
@@ -84,10 +86,11 @@ public class CartController implements ExceptionProcessor {
             cartDeleteService.deleteList(chks);
 
         } else if (mode.equals("order")) { // 장바구니 상품 주문
-
+            String orderUrl = cartInfoService.getOrderUrl(chks);
+            script = String.format("parent.location.replace('%s');", orderUrl);
         }
 
-        model.addAttribute("script", "parent.location.reload()");
+        model.addAttribute("script", script);
         return "common/_execute_script";
     }
 
