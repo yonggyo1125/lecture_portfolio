@@ -24,7 +24,7 @@ public class CartController implements ExceptionProcessor {
         return Utils.getMessage("장바구니", "commons");
     }
 
-    
+
     /**
      * 장바구니에 상품 등록
      *      mode : cart - 장바구니 페이지 노출 상품
@@ -36,6 +36,11 @@ public class CartController implements ExceptionProcessor {
         commonProcess("product", model);
 
         cartSaveService.save(form);
+
+        String redirectURL = form.getMode().equals("DIRECT") ? "/order" : "/cart";
+        String script = String.format("parent.location.replace('%s');", redirectURL);
+
+        model.addAttribute("script", script);
 
         return "common/_execute_script";
     }

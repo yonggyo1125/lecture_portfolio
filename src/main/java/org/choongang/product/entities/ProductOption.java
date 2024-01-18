@@ -13,7 +13,7 @@ import org.choongang.commons.entities.BaseMember;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(indexes =
-@Index(name="idx_pdt_opt_order", columnList = "listOrder DESC, createdAt ASC"))
+    @Index(name="idx_product_opt_order", columnList = "listOrder DESC, createdAt ASC"))
 public class ProductOption extends BaseMember {
 
     @Id @GeneratedValue

@@ -54,4 +54,18 @@ window.addEventListener("DOMContentLoaded", function() {
     }
     /* 상품 수량 증가, 감소 처리 E */
 
+    /** 찜하기, 장바구니, 주문하기 버튼 처리 S */
+    const productActions = document.getElementsByClassName("product_action");
+    for (const el of productActions) {
+        el.addEventListener("click", function() {
+            const mode = this.dataset.mode;
+            if (mode == 'WISH') { // 찜하기
+
+            } else { // 장바구니, 바로구매
+                frmSave.mode.value = mode;
+                frmSave.submit();
+            }
+        });
+    }
+    /** 찜하기, 장바구니, 주문하기 버튼 처리 E */
 });

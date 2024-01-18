@@ -19,7 +19,7 @@ public class CartInfo extends Base {
     private Long seq;
 
     @Enumerated(EnumType.STRING)
-    @Column(length=10, nullable = false)
+    @Column(name="_mode", length=10, nullable = false)
     private CartType mode = CartType.CART;
 
     @Column(name="_uid", nullable = false) // 비회원을 구분하기 위한 UID
