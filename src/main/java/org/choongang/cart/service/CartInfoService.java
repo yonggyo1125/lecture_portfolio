@@ -7,6 +7,8 @@ import org.choongang.cart.entities.CartInfo;
 import org.choongang.cart.entities.QCartInfo;
 import org.choongang.cart.repositories.CartInfoRepository;
 import org.choongang.commons.Utils;
+import org.choongang.file.entities.FileInfo;
+import org.choongang.file.service.FileInfoService;
 import org.choongang.member.MemberUtil;
 import org.choongang.product.constants.DiscountType;
 import org.choongang.product.entities.Product;
@@ -22,6 +24,7 @@ import static org.springframework.data.domain.Sort.Order.asc;
 public class CartInfoService {
 
     private final CartInfoRepository cartInfoRepository;
+    private final FileInfoService fileInfoService;
     private final MemberUtil memberUtil;
     private final Utils utils;
 
@@ -73,6 +76,19 @@ public class CartInfoService {
 
         item.setTotalPrice(totalPrice);
         item.setTotalDiscount(totalDiscount);
+
+        /* 메인, 리스트 이미지 정보 처리 S */
+        String gid = product.getGid();
+        List<FileInfo> mainImages = fileInfoService.getListDone(gid, "main");
+        List<FileInfo> listImages = fileInfoService.getListDone(gid, "list");
+        if (mainImages != null && !mainImages.isEmpty()) {
+            item.setMainImage(mainImages.get(0));
+        }
+
+        if (listImages != null && !listImages.isEmpty()) {
+            item.setListImage(listImages.get(0));
+        }
+        /* 메인, 리스트 이미지 정보 처리 E */
     }
 
     /**
