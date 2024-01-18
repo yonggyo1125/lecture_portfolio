@@ -51,6 +51,8 @@ public class CartInfoService {
     public CartData getCartInfo(CartType mode) {
 
         int totalPrice = 0, totalDiscount = 0, totalDeliveryPrice = 0, payPrice = 0;
+        int totalPackageDeliveryPrice = 0; // 묶음 배송 비용  - 가장 비싼 배송비
+        int totalEachDeliveryPrice = 0; // 개별 배송 비용
 
         List<CartInfo> items = getList(mode);
         for (CartInfo item : items) {
@@ -68,6 +70,28 @@ public class CartInfoService {
             } else { // 고정금액 할인
                 totalDiscount += discount;
             }
-        }
+
+            // 배송비
+            int deliveryPrice = product.getDeliveryPrice();
+            if (product.isPackageDelivery()) { // 묶음 배송
+                totalPackageDeliveryPrice = totalPackageDeliveryPrice > deliveryPrice ? totalPackageDeliveryPrice : deliveryPrice;
+            } else {
+                totalEachDeliveryPrice += deliveryPrice; // 개별 배송
+            }
+        } // endfor
+
+        totalDeliveryPrice = totalPackageDeliveryPrice + totalEachDeliveryPrice; // 배송비
+
+        payPrice = totalPrice + totalDeliveryPrice - totalDiscount; // 결제 금액
+
+        CartData data = CartData.builder()
+                .items(items)
+                .totalPrice(totalPrice)
+                .totalDiscount(totalDiscount)
+                .totalDeliveryPrice(totalDeliveryPrice)
+                .payPrice(payPrice)
+                .build();
+
+        return data;
     }
 }

@@ -1,11 +1,13 @@
 package org.choongang.cart.service;
 
+import lombok.Builder;
 import lombok.Data;
 import org.choongang.cart.entities.CartInfo;
 
 import java.util.List;
 
 @Data
+@Builder
 public class CartData {
     private List<CartInfo> items; // 장바구니 상품 목록
 
