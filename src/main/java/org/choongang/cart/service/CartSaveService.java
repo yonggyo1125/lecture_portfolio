@@ -22,6 +22,7 @@ public class CartSaveService {
 
     private final ProductInfoService productInfoService;
     private final CartInfoRepository cartInfoRepository;
+    private final CartInfoService cartInfoService;
     private final HttpServletRequest request;
     private final MemberUtil memberUtil;
     private final Utils utils;

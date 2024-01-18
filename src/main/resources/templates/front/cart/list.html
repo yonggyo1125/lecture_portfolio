@@ -27,7 +27,7 @@
                 <tr th:unless="*{items == null || items.isEmpty()}"
                     th:each="item, status : *{items}" th:object="${item}">
                     <td>
-                        <input type="hidden" th:name="*{'seq_' + status.index}" th:value="*{seq}">
+                        <input type="hidden" th:name="${'seq_' + status.index}" th:value="*{seq}">
                         <input type="checkbox" name="chk" th:value="${status.index}" th:id="${'chk_' + status.index}">
                         <label th:for="${'chk_' + status.index}"></label>
                     </td>
