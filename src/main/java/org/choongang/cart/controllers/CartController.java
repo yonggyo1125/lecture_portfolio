@@ -11,10 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,6 +69,23 @@ public class CartController implements ExceptionProcessor {
         return utils.tpl("cart/list");
     }
 
+    @PostMapping
+    public String cartPs(@RequestParam("chk") List<Integer> chks,
+                         @RequestParam("mode") String mode, Model model) {
+
+        if (mode.equals("edit")) { // 장바구니 상품 목록 수정
+
+            cartSaveService.saveList(chks);
+
+        } else if (mode.equals("delete")) { // 장바구니 상품 목록 삭제
+            
+        } else if (mode.equals("order")) { // 장바구니 상품 주문
+
+        }
+
+        model.addAttribute("script", "parent.location.reload()");
+        return "common/_execute_script";
+    }
 
     private void commonProcess(String mode, Model model) {
         mode = StringUtils.hasText(mode) ? mode : "list";

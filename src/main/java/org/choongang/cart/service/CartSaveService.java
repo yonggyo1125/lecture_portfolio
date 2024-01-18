@@ -7,10 +7,12 @@ import org.choongang.cart.controllers.RequestCart;
 import org.choongang.cart.entities.CartInfo;
 import org.choongang.cart.repositories.CartInfoRepository;
 import org.choongang.commons.Utils;
+import org.choongang.commons.exceptions.AlertException;
 import org.choongang.member.MemberUtil;
 import org.choongang.member.entities.Member;
 import org.choongang.product.entities.Product;
 import org.choongang.product.service.ProductInfoService;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -71,5 +73,30 @@ public class CartSaveService {
         }
 
         cartInfoRepository.saveAllAndFlush(items);
+    }
+
+    /**
+     * 장바구니 목록 수정
+     *
+     * @param chks
+     */
+    public void saveList(List<Integer> chks) {
+        if (chks == null || chks.isEmpty()) {
+            throw new AlertException(Utils.getMessage("상품을_선택_하세요."), HttpStatus.BAD_REQUEST);
+        }
+
+        for (int chk : chks) {
+            Long seq = Long.valueOf(utils.getParam("seq_" + chk));
+            int ea = Integer.parseInt(utils.getParam("ea_" + chk));
+
+            CartInfo item = cartInfoRepository.findById(seq).orElse(null);
+            if (item == null) {
+                continue;
+            }
+
+            item.setEa(ea);
+        }
+
+        cartInfoRepository.flush();
     }
 }
