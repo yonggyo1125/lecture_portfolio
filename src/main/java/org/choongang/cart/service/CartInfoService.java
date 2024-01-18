@@ -46,7 +46,33 @@ public class CartInfoService {
 
         List<CartInfo> items = (List<CartInfo>)cartInfoRepository.findAll(andBuilder, Sort.by(asc("createdAt")));
 
+        items.forEach(this::addItemInfo);
+
         return items;
+    }
+
+    /**
+     * 장바구니 상품별 추가 정보
+     * @param item
+     */
+    public void addItemInfo(CartInfo item) {
+        Product product = item.getProduct();
+        int salePrice = product.getSalePrice();
+        int ea = item.getEa();
+
+        DiscountType type = product.getDiscountType();
+        int discount = product.getDiscount();
+
+        int totalPrice = salePrice * ea;
+        int totalDiscount = 0;
+        if (type == DiscountType.PERCENT) { // % 할인
+            totalDiscount = (int)Math.round(totalPrice * discount / 100.0);
+        } else { // 고정 금액 할인
+            totalDiscount = discount;
+        }
+
+        item.setTotalPrice(totalPrice);
+        item.setTotalDiscount(totalDiscount);
     }
 
     /**

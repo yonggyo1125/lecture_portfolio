@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -37,10 +38,26 @@ public class CartSaveService {
 
         List<Integer> nums = form.getSelectedNums();
 
-        List<CartInfo> items = new ArrayList<>();
+
+        // 장바구니에 담겨 있는 상품 조회
+        List<CartInfo> items = Objects.requireNonNullElse(cartInfoService.getList(CartType.valueOf(mode)), new ArrayList<>());
+
         for (int num : nums) {
 
             int ea = Integer.parseInt(utils.getParam("ea_" + num));
+
+            boolean exist = false;
+            for (CartInfo item : items) {
+                if (item.getProduct().getSeq().equals(product.getSeq()) ) {
+                    item.setEa(item.getEa() + ea);
+                    exist = true;
+                    break;
+                }
+            }
+
+            if (exist) { // 장바구니에 이미 상품이 있는 경우는 수량만 증가, 추가 X
+                continue;
+            }
 
             CartInfo item = CartInfo.builder()
                     .mode(CartType.valueOf(mode))

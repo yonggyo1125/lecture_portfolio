@@ -34,4 +34,10 @@ public class CartInfo extends Base {
     private Member member;
 
     private int ea = 1; // 주문수량
+
+    @Transient
+    private int totalPrice; // 상품 합계
+
+    @Transient
+    private int totalDiscount; // 상품 할인
 }
