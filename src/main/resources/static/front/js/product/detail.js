@@ -11,11 +11,10 @@ const productDetails = {
         const el = e.currentTarget;
         const inputEl = el.parentElement.querySelector("input[type='number']");
         let ea = parseInt(inputEl.value);
-
         if (el.classList.contains("down")) { // 수량 감소
-            ea++;
-        } else { // 수량 증가
             ea--;
+        } else { // 수량 증가
+            ea++;
         }
 
         ea = ea < 1 ? 1 : ea;
@@ -43,6 +42,15 @@ window.addEventListener("DOMContentLoaded", function() {
     const changeEaEls = document.querySelectorAll(".selected_products .change_ea");
     for (const el of changeEaEls) {
         el.addEventListener("click", productDetails.changeEa);
+    }
+
+    const eaEls = document.querySelectorAll(".selected_products input[type='number']");
+    for (const el of eaEls) {
+        el.addEventListener("blur", function() {
+            let ea = parseInt(this.value);
+            ea = ea < 1 ? 1 : ea;
+            this.value = ea;
+        });
     }
     /* 상품 수량 증가, 감소 처리 E */
 
