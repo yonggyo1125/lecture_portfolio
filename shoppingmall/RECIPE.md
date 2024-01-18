@@ -136,7 +136,71 @@ public class RecipeController implements ExceptionProcessor {
 > resources/templates/front/recipe/_form.html
 
 ```html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="form" th:object="${requestRecipe}">
+    <div class="error global" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></div>
 
+    <input type="hidden" name="gid" th:field="*{gid}">
+    <div class="main_image_box">
+        <div class="upload_files" id="main_images" data-image-only="true">
+            <i class="xi-plus"></i>
+            <div class="txt" th:text="#{대표_이미지_업로드}"></div>
+        </div>
+        <div class="thumbs"></div>
+    </div>
+    <!--// main_image_box -->
+
+    <div class="rows recipe_name">
+        <input type="text" name="rcpName" th:placeholder="#{레서피의_이름이_무엇인가요?}" th:field="*{rcpName}">
+        <div class="error" th:each="err : ${#fields.errors('rcpName')}" th:text="${err}"></div>
+    </div>
+    <div class="rows">
+        <textarea name="rcpInfo" th:placeholder="#{레시피에_대한_간단한_설명을_덧붙여주세요.}"></textarea>
+    </div>
+
+    <div class="stit" th:text="#{예상_소요_시간}"></div>
+    <div class="rows estimate_times">
+        <input type="radio" name="estimatedT" value="15" id="estimatedT_15">
+        <label for="estimatedT_15" th:text="#{15분_컷}"></label>
+
+        <input type="radio" name="estimatedT" value="30" id="estimatedT_30">
+        <label for="estimatedT_30" th:text="#{30분_컷}"></label>
+
+        <input type="radio" name="estimatedT" value="45" id="estimatedT_45">
+        <label for="estimatedT_45" th:text="#{45분_컷}"></label>
+
+        <input type="radio" name="estimatedT" value="46" id="estimatedT_46">
+        <label for="estimatedT_46" th:text="#{46분_컷}"></label>
+    </div>
+    <div class="rows">
+        <div class="stit" th:text="#{카테고리}"></div>
+        <select name="category">
+            <option value="" th:text="#{요리_분류}"></option>
+        </select>
+        <select name="subCategory">
+            <option value="" th:text="#{요리_종류}"></option>
+        </select>
+    </div>
+    <div class="rows">
+        <div th:text="#{기준량}"></div>
+        <input type="number" name="amount" min="1">
+        <button type="button"><i class="xi-plus"></i></button>
+        <th:block th:text="#{인분}"></th:block>
+    </div>
+    <div class="rows">
+        <div th:text="#{필수재료}"></div>
+
+    </div>
+    <div class="rows">
+        <div th:text="#{부재료}"></div>
+    </div>
+    <div class="rows">
+        <div th:text="#{양념}"></div>
+    </div>
+    <th:block th:replace="~{common/_file_tpl::image1_tpl}"></th:block>
+</th:block>
+</html>
 ```
 
 > resources/templates/front/recipe/add.html
@@ -195,11 +259,108 @@ public class RecipeController implements ExceptionProcessor {
 > resources/static/css/recipe/style.css
 
 ```css
+.recipe_form { width: 400px; margin: 0 auto; padding: 0 10px; }
+/* 공통 */
+.stit { font-weight: 500; margin: 15px 0 10px; }
 
+/* 대표이미지 S */
+#main_images { background: #d5d5d5; width: 400px; height: 400px; display: flex;  flex-direction: column; align-items: center; justify-content: center; color: #222; margin: 0 auto; }
+#main_images i { font-size: 3rem; cursor: pointer; }
+#main_images.uploaded i, #main_images.uploaded .txt { display: none; }
+.image1_tpl_box { width: 62px; cursor: pointer; }
+.image1_tpl_box > .inner { width: 60px; height: 60px; }
+.main_image_box .thumbs { display: flex; }
+.main_image_box .thumbs .image1_tpl_box { margin: 3px 0; }
+.main_image_box .thumbs .image1_tpl_box + .image1_tpl_box { margin-left: 3px; }
+/* 대표이미지 E */
+
+input[type='text'],
+input[type='password'],
+input[type='number']{ width: 100%; height: 45px; border: 1px solid #d5d5d5; padding; 0 10px; }
+textarea { border: 1px solid #d5d5d5; width: 100%; resize: none; height: 100px; padding: 10px; }
+
+/* 예상 소요시간 S */
+.estimate_times input[type='radio'] { display: none; }
+.estimate_times input[type='radio']+label { display: inline-block; border: 2px solid #222; background: #fff; color: #222; font-size: 0.95rem; padding: 0 10px; height: 30px; line-height: 26px; cursor: pointer; }
+.estimate_times input[type='radio']:checked+label { background: #222; color: #fff; }
+/* 예상 소요시간 E */
 ```
 
 > resources/static/js/recipe/form.js 
 
 ```javascript
+window.addEventListener("DOMContentLoaded", function() {
+    const thumbs = document.getElementsByClassName("image1_tpl_box");
+    for (const el of thumbs) {
+        thumbsClickHandler(el);
+    }
+});
 
+/**
+* 파일 업로드 처리 콜백
+*
+*/
+function callbackFileUpload(files) {
+    const tpl = document.getElementById("image1_tpl").innerHTML;
+    const domParser = new DOMParser();
+    const targetEl = document.getElementById("main_images");
+    const thumbsEl = document.querySelector(".main_image_box .thumbs");
+    for (const file of files) {
+
+        let html = tpl;
+        html = html.replace(/\[seq\]/g, file.seq)
+                    .replace(/\[imageUrl\]/g, file.fileUrl)
+                    .replace(/\[fileName\]/g, file.fileName);
+
+        const dom = domParser.parseFromString(html, "text/html");
+        const imageBox = dom.querySelector(".image1_tpl_box");
+
+        if (!targetEl.classList.contains("uploaded")) {
+            targetEl.classList.add("uploaded")
+        }
+
+        targetEl.style.backgroundImage=`url('${file.fileUrl}')`;
+        targetEl.style.backgroundSize='cover';
+        targetEl.style.backgroundRepeat='no-repeat';
+        targetEl.style.backgroundPosition="center center";
+
+        thumbsEl.appendChild(imageBox);
+        thumbsClickHandler(imageBox);
+    }
+}
+
+
+/**
+* 파일 삭제 처리 콜백
+*
+*/
+function callbackFileDelete(seq) {
+    const el = document.getElementById(`file_${seq}`);
+    el.parentElement.removeChild(el);
+
+    const thumbs = document.getElementsByClassName("image1_tpl_box");
+    if (thumbs.length > 0) {
+        thumbs[0].click();
+    } else {
+        const mainImageEl = document.getElementById("main_images");
+        mainImageEl.style.backgroundImage = null;
+        mainImageEl.classList.remove("uploaded");
+    }
+
+}
+
+/**
+* 썸네일 클릭 이벤트 처리
+*
+*/
+function thumbsClickHandler(thumb) {
+
+   const mainImageEl = document.getElementById("main_images");
+
+   thumb.addEventListener("click", function() {
+    console.log("클릭!")
+    const url = this.dataset.url;
+    mainImageEl.style.backgroundImage=`url('${url}')`;
+  });
+}
 ```
