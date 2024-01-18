@@ -14,7 +14,7 @@
         </div>
         <div class="product_info">
             <form name="frmSave" method="post" th:action="@{/cart/save}" autocomplete="off" target="ifrmProcess">
-                <input type="hidden" name="mode" value="cart">
+                <input type="hidden" name="mode" value="CART">
                 <input type="hidden" name="seq" th:value="*{seq}">
                 <div th:text="*{name}"></div>
 
