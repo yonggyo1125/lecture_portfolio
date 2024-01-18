@@ -3,6 +3,7 @@ package org.choongang.cart.controllers;
 import lombok.RequiredArgsConstructor;
 import org.choongang.cart.constants.CartType;
 import org.choongang.cart.service.CartData;
+import org.choongang.cart.service.CartDeleteService;
 import org.choongang.cart.service.CartInfoService;
 import org.choongang.cart.service.CartSaveService;
 import org.choongang.commons.ExceptionProcessor;
@@ -23,6 +24,7 @@ public class CartController implements ExceptionProcessor {
 
     private final CartSaveService cartSaveService;
     private final CartInfoService cartInfoService;
+    private final CartDeleteService cartDeleteService;
     private final Utils utils;
 
 
@@ -78,7 +80,9 @@ public class CartController implements ExceptionProcessor {
             cartSaveService.saveList(chks);
 
         } else if (mode.equals("delete")) { // 장바구니 상품 목록 삭제
-            
+
+            cartDeleteService.deleteList(chks);
+
         } else if (mode.equals("order")) { // 장바구니 상품 주문
 
         }
