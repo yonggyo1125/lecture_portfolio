@@ -18,11 +18,12 @@
                     <th th:text="#{상품가}"></th>
                     <th th:text="#{수량}"></th>
                     <th th:text="#{합계}"></th>
+                    <th th:text="#{할인}"></th>
                 </tr>
             </thead>
             <tbody>
                 <tr th:if="*{items == null || items.isEmpty()}">
-                    <td colspan="6" th:text="#{장바구니가_비어있습니다.}"></td>
+                    <td colspan="7" th:text="#{장바구니가_비어있습니다.}"></td>
                 </tr>
                 <tr th:unless="*{items == null || items.isEmpty()}"
                     th:each="item, status : *{items}" th:object="${item}">
@@ -48,7 +49,14 @@
                             <i class="xi-plus"></i>
                         </button>
                     </td>
-                    <td></td>
+                    <td>
+                        <span th:text="*{totalPrice >= 1000 ? #numbers.formatInteger(totalPrice, 3, 'COMMA') : totalPrice}"></span>
+                        <th:block th:text="#{원}"></th:block>
+                    </td>
+                    <td>
+                        <span th:text="*{totalDiscount >= 1000 ? #numbers.formatInteger(totalDiscount, 3, 'COMMA') : totalDiscount}"></span>
+                        <th:block th:text="#{원}"></th:block>
+                    </td>
                 </tr>
             </tbody>
         </table>
