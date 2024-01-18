@@ -3,7 +3,7 @@ window.addEventListener("DOMContentLoaded", function() {
     for (const el of cartActions) {
         el.addEventListener("click", function() {
             const mode = this.dataset.mode;
-            frmCart.mode.value = mode;
+            frmCart.mode.value = mode.replace("_all", "");
 
             if (mode.indexOf("_all") != -1) { // 전체 선택(전체 삭제, 전체 주문)
                 const chks = document.getElementsByName("chk");
