@@ -14,7 +14,7 @@
         <h2 th:text="#{주문자_정보}"></h2>
 
         <dl>
-            <dt th:text="#{주문자명}"></dt>
+            <dt th:text="#{주문자_이름}"></dt>
             <dd>
                 <input type="text" name="orderName">
             </dd>
@@ -34,6 +34,40 @@
         </dl>
 
         <h2 th:text="#{받는분_정보}"></h2>
+
+        <dl>
+            <dt th:text="#{받는분_이름}"></dt>
+            <dd>
+                <input type="text" name="receiverName">
+            </dd>
+        </dl>
+        <dl>
+            <dt th:text="#{휴대전화번호}"></dt>
+            <dd>
+                <input type="text" name="receiverCellPhone">
+            </dd>
+        </dl>
+        <dl>
+            <dt th:text="#{배송_주소}"></dt>
+            <dd>
+                <div class="address_rows">
+                    <input type="text" name="zonecode" th:placeholder="#{우편번호}" readonly id="zonecode">
+                    <button type="button" class="search_address" data-zonecode-id="zonecode" data-address-id="address">
+                        <i class="xi-search"></i>
+                        <th:block th:text="#{주소_찾기}"></th:block>
+                    </button>
+                </div>
+
+                <div class="address_rows">
+                    <input type="text" name="address" th:placeholder="#{주소}" readonly id="address">
+                </div>
+
+                <div class="address_rows">
+                    <input type="text" name="addressSub" th:pleaceholder="#{나머지_주소}" readonly>
+                </div>
+            </dd>
+        </dl>
+
 
         <h2 th:text="#{결제_정보}"></h2>
 
