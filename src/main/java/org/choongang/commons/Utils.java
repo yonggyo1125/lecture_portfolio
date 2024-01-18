@@ -269,4 +269,19 @@ public class Utils {
 
         return style;
     }
+
+    /**
+     * 장바구니 비회원 UID
+     *
+     * @return
+     */
+    public int cartUid() {
+        HttpSession session = request.getSession();
+
+        String ip = request.getRemoteAddr();
+        String ua = request.getHeader("User-Agent");
+        String sessId = session.getId();
+
+        return Objects.hash(ip, ua, sessId);
+    }
 }

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.choongang.commons.ExceptionProcessor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -19,7 +20,8 @@ public class CartController implements ExceptionProcessor {
      * @return
      */
     @PostMapping("/save")
-    public String save(Model model) {
+    public String save(RequestCart form, Errors errors, Model model) {
+
 
 
         return "common/_execute_script";
