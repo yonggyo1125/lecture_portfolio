@@ -7,8 +7,20 @@ const productDetails = {
     * 구매 수량 변경
     *
     */
-    changeEa(el) {
+    changeEa(e) {
+        const el = e.currentTarget;
+        const inputEl = el.parentElement.querySelector("input[type='number']");
+        let ea = parseInt(inputEl.value);
 
+        if (el.classList.contains("down")) { // 수량 감소
+            ea++;
+        } else { // 수량 증가
+            ea--;
+        }
+
+        ea = ea < 1 ? 1 : ea;
+
+        inputEl.value = ea;
     }
 };
 
