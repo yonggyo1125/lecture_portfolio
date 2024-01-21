@@ -17,8 +17,7 @@ import org.choongang.order.constants.PayType;
 public class OrderInfo extends Base {
 
     @Id
-    @GeneratedValue
-    private Long seq;
+    private Long seq = System.currentTimeMillis();
 
     /**
      * 이 주문 상태값은 각 품주별 주문상태 한개라도 특정 단계 이전이라면 이전단계에 맞춘다. 
