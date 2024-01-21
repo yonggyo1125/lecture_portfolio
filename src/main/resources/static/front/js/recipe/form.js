@@ -1,18 +1,37 @@
 const recipeForm = {
+    init() {
+        // 필수재료, 부재료, 양념 등 완성 처리
+        const requiredIngJSON = document.getElementById("requiredIngJSON");
+
+        const subIngJSON = document.getElementById("subIngJSON");
+
+        const condimentsJSON = document.getElementById("condimentsJSON");
+
+        if (requiredIngJSON) {
+
+        }
+
+    },
     /**
     * 입력항목 추가
     *
     */
     addItem(e) {
         const el = e.currentTarget;
-
+        const inputBox = recipeForm.createItem(el.dataset.name);
+        const targetEl = document.getElementById(el.dataset.id);
+        if (targetEl) {
+            targetEl.appendChild(inputBox);
+        }
     },
     /**
     * 입력항목 제거
     *
     */
     deleteItem(e) {
-
+        const el = e.currentTarget;
+        const parentEl = el.parentElement;
+        parentEl.parentElement.removeChild(parentEl);
     },
     /**
     * 입력항목 생성
@@ -23,7 +42,9 @@ const recipeForm = {
         const inputText = document.createElement("input");
         const inputEa = document.createElement("input");
         const closeButton = document.createElement("button");
-        const buttonIcon = document.createTextNode("i");
+        const buttonIcon = document.createElement("i");
+        inputText.placeholder="예) 당근";
+        inputEa.placeholder="1 개";
 
         rows.className = "item_box";
 
@@ -34,7 +55,7 @@ const recipeForm = {
         inputEa.name = `${name}Ea`;
 
         closeButton.type = "button";
-        buttonIcon.className = "xi-close";
+        buttonIcon.className = "remove_item xi-close";
 
         closeButton.appendChild(buttonIcon);
 
@@ -42,11 +63,16 @@ const recipeForm = {
         rows.appendChild(inputEa);
         rows.appendChild(closeButton);
 
+        closeButton.addEventListener("click", this.deleteItem);
+
         return rows;
     }
 };
 
 window.addEventListener("DOMContentLoaded", function() {
+
+    recipeForm.init();
+
     const thumbs = document.getElementsByClassName("image1_tpl_box");
     for (const el of thumbs) {
         thumbsClickHandler(el);
@@ -58,6 +84,33 @@ window.addEventListener("DOMContentLoaded", function() {
         el.addEventListener("click", recipeForm.addItem);
     }
     /* 입력 항목 추가 버튼 처리 E */
+
+    /* 입력 항목 제거 버튼 처리 S */
+    const closeButtons = document.getElementsByClassName("remove_item");
+    for (const el of closeButtons) {
+        el.addEventListener("click", recipeForm.deleteItem)
+    }
+    /* 입력 항목 제거 버튼 처리 E */
+
+    /* 기준량 버튼 이벤트 처리 S */
+    const amountButtons = document.querySelectorAll(".amount_box button");
+    const amountInputEa = document.querySelector(".amount_box input[type='number']");
+    for (const el of amountButtons) {
+        el.addEventListener("click", function() {
+            let ea = amountInputEa.value;
+            ea = isNaN(ea) ? 1 : Number(ea);
+            if (this.classList.contains("down")) { // 수량 감소
+                ea--
+            } else { // 수량 증가
+                ea++;
+            }
+
+            ea = ea < 1 ? 1 : ea;
+
+            amountInputEa.value = ea;
+        });
+    }
+    /* 기준량 버튼 이벤트 처리 E */
 });
 
 /**

@@ -142,6 +142,10 @@ public class RecipeController implements ExceptionProcessor {
     <div class="error global" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></div>
 
     <input type="hidden" name="gid" th:field="*{gid}">
+    <input type="hidden" name="requiredIngJSON" th:field="*{requiredIngJSON}">
+    <input type="hidden" name="subIngJSON" th:field="*{subIngJSON}">
+    <input type="hidden" name="condimentsJSON" th:field="*{condimentsJSON}">
+
     <div class="main_image_box">
         <div class="upload_files" id="main_images" data-image-only="true">
             <i class="xi-plus"></i>
@@ -161,42 +165,53 @@ public class RecipeController implements ExceptionProcessor {
 
     <div class="stit" th:text="#{예상_소요_시간}"></div>
     <div class="rows estimate_times">
-        <input type="radio" name="estimatedT" value="15" id="estimatedT_15">
+        <input type="radio" name="estimatedT" value="15" id="estimatedT_15" th:field="*{estimatedT}">
         <label for="estimatedT_15" th:text="#{15분_컷}"></label>
 
-        <input type="radio" name="estimatedT" value="30" id="estimatedT_30">
+        <input type="radio" name="estimatedT" value="30" id="estimatedT_30" th:field="*{estimatedT}">
         <label for="estimatedT_30" th:text="#{30분_컷}"></label>
 
-        <input type="radio" name="estimatedT" value="45" id="estimatedT_45">
+        <input type="radio" name="estimatedT" value="45" id="estimatedT_45" th:field="*{estimatedT}">
         <label for="estimatedT_45" th:text="#{45분_컷}"></label>
 
-        <input type="radio" name="estimatedT" value="46" id="estimatedT_46">
+        <input type="radio" name="estimatedT" value="46" id="estimatedT_46" th:field="*{estimatedT}">
         <label for="estimatedT_46" th:text="#{46분_컷}"></label>
     </div>
     <div class="rows">
         <div class="stit" th:text="#{카테고리}"></div>
-        <select name="category">
+        <select name="category" th:field="*{category}">
             <option value="" th:text="#{요리_분류}"></option>
         </select>
-        <select name="subCategory">
+        <select name="subCategory" th:field="*{subCategory}">
             <option value="" th:text="#{요리_종류}"></option>
         </select>
     </div>
     <div class="rows">
-        <div th:text="#{기준량}"></div>
-        <input type="number" name="amount" min="1">
-        <button type="button"><i class="xi-plus"></i></button>
-        <th:block th:text="#{인분}"></th:block>
+        <div class="stit" th:text="#{기준량}"></div>
+        <div class="amount_box">
+            <button type="button" class="down"><i class="xi-minus"></i></button>
+            <input type="number" name="amount" min="1" th:field="*{amount}">
+            <button type="button" class="up"><i class="xi-plus"></i></button>
+            <th:block th:text="#{인분}"></th:block>
+        </div>
     </div>
     <div class="rows">
-        <div th:text="#{필수재료}"></div>
+        <div class="stit" th:text="#{필수재료}"></div>
 
+        <div class="input_item_box" id="requiredIng"></div>
+        <button type="button" th:text="#{추가}" data-id="requiredIng" data-name="requiredIng" class="add_input_item"></button>
     </div>
     <div class="rows">
-        <div th:text="#{부재료}"></div>
+        <div class="stit" th:text="#{부재료}"></div>
+
+        <div class="input_item_box" id="subIng"></div>
+        <button type="button" th:text="#{추가}" data-id="subIng" data-name="subIng" class="add_input_item"></button>
     </div>
     <div class="rows">
-        <div th:text="#{양념}"></div>
+        <div class="stit" th:text="#{양념}"></div>
+
+        <div class="input_item_box" id="condiments"></div>
+        <button type="button" th:text="#{추가}" data-id="condiments" data-name="condiments" class="add_input_item"></button>
     </div>
     <th:block th:replace="~{common/_file_tpl::image1_tpl}"></th:block>
 </th:block>
@@ -289,11 +304,119 @@ textarea { border: 1px solid #d5d5d5; width: 100%; resize: none; height: 100px; 
 > resources/static/js/recipe/form.js 
 
 ```javascript
+const recipeForm = {
+    init() {
+        // 필수재료, 부재료, 양념 등 완성 처리
+        const requiredIngJSON = document.getElementById("requiredIngJSON");
+
+        const subIngJSON = document.getElementById("subIngJSON");
+
+        const condimentsJSON = document.getElementById("condimentsJSON");
+
+        if (requiredIngJSON) {
+
+        }
+
+    },
+    /**
+    * 입력항목 추가
+    *
+    */
+    addItem(e) {
+        const el = e.currentTarget;
+        const inputBox = recipeForm.createItem(el.dataset.name);
+        const targetEl = document.getElementById(el.dataset.id);
+        if (targetEl) {
+            targetEl.appendChild(inputBox);
+        }
+    },
+    /**
+    * 입력항목 제거
+    *
+    */
+    deleteItem(e) {
+        const el = e.currentTarget;
+        const parentEl = el.parentElement;
+        parentEl.parentElement.removeChild(parentEl);
+    },
+    /**
+    * 입력항목 생성
+    *
+    */
+    createItem(name) {
+        const rows = document.createElement("div");
+        const inputText = document.createElement("input");
+        const inputEa = document.createElement("input");
+        const closeButton = document.createElement("button");
+        const buttonIcon = document.createElement("i");
+        inputText.placeholder="예) 당근";
+        inputEa.placeholder="1 개";
+
+        rows.className = "item_box";
+
+        inputText.type = "text";
+        inputEa.type="text";
+
+        inputText.name = name;
+        inputEa.name = `${name}Ea`;
+
+        closeButton.type = "button";
+        buttonIcon.className = "remove_item xi-close";
+
+        closeButton.appendChild(buttonIcon);
+
+        rows.appendChild(inputText);
+        rows.appendChild(inputEa);
+        rows.appendChild(closeButton);
+
+        closeButton.addEventListener("click", this.deleteItem);
+
+        return rows;
+    }
+};
+
 window.addEventListener("DOMContentLoaded", function() {
+
+    recipeForm.init();
+
     const thumbs = document.getElementsByClassName("image1_tpl_box");
     for (const el of thumbs) {
         thumbsClickHandler(el);
     }
+
+    /* 입력 항목 추가 버튼 처리 S */
+    const buttons = document.getElementsByClassName("add_input_item");
+    for (const el of buttons) {
+        el.addEventListener("click", recipeForm.addItem);
+    }
+    /* 입력 항목 추가 버튼 처리 E */
+
+    /* 입력 항목 제거 버튼 처리 S */
+    const closeButtons = document.getElementsByClassName("remove_item");
+    for (const el of closeButtons) {
+        el.addEventListener("click", recipeForm.deleteItem)
+    }
+    /* 입력 항목 제거 버튼 처리 E */
+
+    /* 기준량 버튼 이벤트 처리 S */
+    const amountButtons = document.querySelectorAll(".amount_box button");
+    const amountInputEa = document.querySelector(".amount_box input[type='number']");
+    for (const el of amountButtons) {
+        el.addEventListener("click", function() {
+            let ea = amountInputEa.value;
+            ea = isNaN(ea) ? 1 : Number(ea);
+            if (this.classList.contains("down")) { // 수량 감소
+                ea--
+            } else { // 수량 증가
+                ea++;
+            }
+
+            ea = ea < 1 ? 1 : ea;
+
+            amountInputEa.value = ea;
+        });
+    }
+    /* 기준량 버튼 이벤트 처리 E */
 });
 
 /**
