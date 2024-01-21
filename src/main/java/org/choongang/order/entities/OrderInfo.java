@@ -53,7 +53,7 @@ public class OrderInfo extends Base {
     @Column(length=100, nullable=false)
     private String address; // 배송주소 - 주소
 
-    @Column(length=100, nullable = false)
+    @Column(length=100)
     private String addressSub; // 배송주소 - 나머지 주소
 
     @Column(length=150, nullable = false)

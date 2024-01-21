@@ -39,6 +39,107 @@ public enum OrderStatus {
 }
 ```
 
+## 커맨드 객체 정의
+
+> order/controllers/RequestOrder.java
+
+```java
+package org.choongang.order.controllers;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
+import org.choongang.order.constants.PayType;
+
+import java.util.List;
+
+@Data
+public class RequestOrder {
+
+    private List<Long> cartSeq; // 장바구니 등록 번호
+
+    @NotBlank
+    private String orderName; // 주문자명
+
+    @NotBlank
+    private String orderCellPhone; // 주문자 휴대전화번호
+
+    @Email
+    @NotBlank
+    private String orderEmail; // 주문자 이메일 정보
+
+    @NotBlank
+    private String receiverName; // 받는분 이름
+
+    @NotBlank
+    private String receiverCellPhone; // 받는분 휴대전화 버놓
+
+    @NotBlank
+    private String zonecode; // 배송주소 - 우편번호
+
+    @NotBlank
+    private String address; // 배송주소 - 주소
+
+    private String addressSub; // 배송주소 - 나머지 주소
+
+    private String deliveryMemo; // 배송 메모
+
+    @NotBlank
+    private String payType = PayType.LBT.name(); // 결제 수단
+    
+    private String depositor; // 무통장 입금일 경우 입금자명
+
+}
+```
+
+> resources/messages/validations.properties
+
+```properties
+# 공통 
+NotBlank=필수입력항목
+Email=이메일 형식이 아닙니다.
+
+# 회원
+NotBlank.email=이메일을 입력하세요.
+NotBlank.userId=아이디를 입력하세요.
+NotBlank.password=비밀번호를 입력하세요.
+NotBlank.confirmPassword=비밀번호를 확인하세요.
+NotBlank.requestJoin.name=회원명을 입력하세요.
+AssertTrue.requestJoin.agree=회원가입 약관에 동의하세요.
+Size.requestJoin.userId=아이디는 6자리 이상 입력하세요.
+Size.requestJoin.password=비밀번호는 8자리 이상 입력하세요.
+Duplicated.requestJoin.userId=이미 가입된 아이디 입니다.
+Duplicated.requestJoin.email=이미 가입된 이메일 입니다.
+Complexity.requestJoin.password=비밀번호는 대소문자 각각 알파벳 1자 이상, 숫자 1자 이상, 특수문자 1자 이상을 포함해야 합니다.
+Mismatch.password=비밀번호가 일치하지 않습니다.
+Required.verified.email=이메일 인증이 필요합니다.
+
+# 비밀번호 찾기
+NotBlank.requestFindPw.name=회원명을 입력하세요.
+
+# 관리자 - 상품 - 카테고리
+NotBlank.requestCategory.cateCd=분류코드를 입력하세요.
+NotBlank.requestCategory.cateNm=분류명을 입력하세요.
+Duplicated.requestCategory.cateCd=이미 등록된 분류코드 입니다.
+
+#관리자 - 상품 - 등록/수정
+NotBlank.requestProduct.cateCd=분류코드를 선택하세요.
+NotBlank.requestProduct.name=상품명을 입력하세요.
+
+# 사용자 - 장바구니
+상품을_선택_하세요.=상품을 선택 하세요.
+
+# 주문서
+NotBlank.requestOrder.orderName=주문자명을 입력하세요.
+NotBlank.requestOrder.orderCellPhone=주문자 휴대전화번호를 입력하세요.
+NotBlank.requestOrder.orderEmail=주문자 이메일을 입력하세요.
+NotBlank.requestOrder.receiverName=받는분 이름을 입력하세요.
+NotBlank.requestOrder.receiverCellPhone=받는분 휴대전화 번호를 입력하세요.
+NotBlank.requestOrder.zonecode=우편번호를 입력하세요.
+NotBlank.requestOrder.address=주소를 입력하세요.
+NotBlank.requestOrder.payType=결제 수단을 선택하세요.
+```
+
 ## 엔티티 및 레포지토리 구성
 
 > order/entities/OrderInfo.java : 주문 정보
@@ -99,7 +200,7 @@ public class OrderInfo extends Base {
     @Column(length=100, nullable=false)
     private String address; // 배송주소 - 주소
 
-    @Column(length=100, nullable = false)
+    @Column(length=100)
     private String addressSub; // 배송주소 - 나머지 주소
 
     @Column(length=150, nullable = false)
@@ -203,6 +304,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 
 public interface OrderItemRepository extends JpaRepository<OrderItem, Long>, QuerydslPredicateExecutor<OrderItem> {
+    
 }
 ```
 ## 
