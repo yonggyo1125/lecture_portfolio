@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.choongang.commons.entities.Base;
 import org.choongang.member.entities.Member;
 import org.choongang.order.constants.OrderStatus;
+import org.choongang.order.constants.PayType;
 
 @Data
 @Builder
@@ -62,4 +63,10 @@ public class OrderInfo extends Base {
     private int totalDeliveryPrice; // 주문 시점 배송비
     private int totalDiscount; // 주문 시점 총 할인 금액
     private int payPrice; // 주문 시점 결제 금액
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20, nullable = false)
+    private PayType payType; // 결제 수단
+
+    private String depositor; // 무통장 입금일 경우 입금자명
 }

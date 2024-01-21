@@ -1,6 +1,24 @@
 # 주문
 
-## 공통
+## 상수 정의
+
+> order/constants/PayType.java
+
+```java
+package org.choongang.order.constants;
+
+/**
+ * 결제 수단
+ *
+ */
+public enum PayType {
+    LBT, // 무통장 입금
+    VACCOUNT, // 가상계좌
+    CARD, // 신용카드
+    DIRECT // 계좌이체
+}
+```
+
 
 > order/constants/OrderStatus.java : 주문 상태 
 
@@ -21,7 +39,7 @@ public enum OrderStatus {
 }
 ```
 
-## 엔티티 구성
+## 엔티티 및 레포지토리 구성
 
 > order/entities/OrderInfo.java : 주문 정보
 
@@ -36,6 +54,7 @@ import lombok.NoArgsConstructor;
 import org.choongang.commons.entities.Base;
 import org.choongang.member.entities.Member;
 import org.choongang.order.constants.OrderStatus;
+import org.choongang.order.constants.PayType;
 
 @Data
 @Builder
@@ -90,6 +109,12 @@ public class OrderInfo extends Base {
     private int totalDeliveryPrice; // 주문 시점 배송비
     private int totalDiscount; // 주문 시점 총 할인 금액
     private int payPrice; // 주문 시점 결제 금액
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20, nullable = false)
+    private PayType payType; // 결제 수단
+
+    private String depositor; // 무통장 입금일 경우 입금자명
 }
 ```
 
@@ -154,4 +179,30 @@ public class OrderItem extends Base {
 }
 ```
 
+> order/repositories/OrderInfoRepository.java
 
+```java
+package org.choongang.order.repositories;
+
+import org.choongang.order.entities.OrderInfo;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+
+public interface OrderInfoRepository extends JpaRepository<OrderInfo, Long>, QuerydslPredicateExecutor<OrderInfo> {
+}
+
+```
+
+> order/repositories/OrderItemRepository.jav
+
+```java
+package org.choongang.order.repositories;
+
+import org.choongang.order.entities.OrderItem;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+
+public interface OrderItemRepository extends JpaRepository<OrderItem, Long>, QuerydslPredicateExecutor<OrderItem> {
+}
+```
+## 
