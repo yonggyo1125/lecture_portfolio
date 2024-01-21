@@ -58,6 +58,8 @@ public class RequestOrder {
 
     private List<Long> cartSeq; // 장바구니 등록 번호
 
+    private String mode = "DIRECT"; // DIRECT : 바로 주문, CART : 장바구니에서 주문한 상품
+
     @NotBlank
     private String orderName; // 주문자명
 
@@ -86,7 +88,7 @@ public class RequestOrder {
 
     @NotBlank
     private String payType = PayType.LBT.name(); // 결제 수단
-    
+
     private String depositor; // 무통장 입금일 경우 입금자명
 
 }

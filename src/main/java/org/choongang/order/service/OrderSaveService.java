@@ -2,6 +2,7 @@ package org.choongang.order.service;
 
 import lombok.RequiredArgsConstructor;
 import org.choongang.cart.service.CartInfoService;
+import org.choongang.order.controllers.RequestOrder;
 import org.choongang.order.repositories.OrderInfoRepository;
 import org.choongang.order.repositories.OrderItemRepository;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,9 @@ public class OrderSaveService {
     private final OrderInfoRepository orderInfoRepository;
     private final OrderItemRepository orderItemRepository;
 
-    public void save() {
+    public void save(RequestOrder form) {
+
+
 
     }
 
