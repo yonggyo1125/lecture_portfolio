@@ -1,14 +1,14 @@
 package org.choongang.order.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.choongang.commons.entities.Base;
 import org.choongang.member.entities.Member;
 import org.choongang.order.constants.OrderStatus;
 import org.choongang.order.constants.PayType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Builder
@@ -68,4 +68,8 @@ public class OrderInfo extends Base {
     private PayType payType; // 결제 수단
 
     private String depositor; // 무통장 입금일 경우 입금자명
+
+    @ToString.Exclude
+    @OneToMany(mappedBy = "orderInfo", fetch = FetchType.LAZY)
+    private List<OrderItem> orderItems = new ArrayList<>();
 }

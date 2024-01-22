@@ -148,14 +148,14 @@ NotBlank.requestOrder.payType=결제 수단을 선택하세요.
 package org.choongang.order.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.choongang.commons.entities.Base;
 import org.choongang.member.entities.Member;
 import org.choongang.order.constants.OrderStatus;
 import org.choongang.order.constants.PayType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Builder
@@ -215,7 +215,12 @@ public class OrderInfo extends Base {
     private PayType payType; // 결제 수단
 
     private String depositor; // 무통장 입금일 경우 입금자명
+
+    @ToString.Exclude
+    @OneToMany(mappedBy = "orderInfo", fetch = FetchType.LAZY)
+    private List<OrderItem> orderItems = new ArrayList<>();
 }
+
 ```
 
 > order/entities/OrderItem.java : 주문 상품 
@@ -290,7 +295,6 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 
 public interface OrderInfoRepository extends JpaRepository<OrderInfo, Long>, QuerydslPredicateExecutor<OrderInfo> {
 }
-
 ```
 
 > order/repositories/OrderItemRepository.jav
@@ -389,4 +393,63 @@ public class OrderSaveService {
     }
 
 }
+```
+
+> order/service/OrderNotFoundException.java 
+
+```java
+package org.choongang.order.service;
+
+import org.choongang.commons.Utils;
+import org.choongang.commons.exceptions.AlertBackException;
+import org.springframework.http.HttpStatus;
+
+public class OrderNotFoundException extends AlertBackException {
+    public OrderNotFoundException() {
+        super(Utils.getMessage("NotFound.order", "errors"), HttpStatus.NOT_FOUND);
+    }
+}
+```
+
+> resources/messages/errors.properties
+
+```properties
+... 
+
+NotFound.order=주문을 찾을 수 없습니다.
+```
+
+> order/service/OrderInfoService.java : 주문서 조회
+
+```java
+package org.choongang.order.service;
+
+import lombok.RequiredArgsConstructor;
+import org.choongang.order.entities.OrderInfo;
+import org.choongang.order.repositories.OrderInfoRepository;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class OrderInfoService {
+    private final OrderInfoRepository orderInfoRepository;
+
+    /**
+     * 주문서 조회
+     *
+     * @param seq
+     * @return
+     */
+    public OrderInfo get(Long seq) {
+        OrderInfo orderInfo = orderInfoRepository.findById(seq).orElseThrow(OrderNotFoundException::new);
+
+        return orderInfo;
+    }
+}
+```
+
+> order/service/OrderChangeService.java : 주문상태 변경
+
+```java
+
 ```
