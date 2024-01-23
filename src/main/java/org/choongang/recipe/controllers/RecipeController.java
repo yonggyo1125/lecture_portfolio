@@ -4,15 +4,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.choongang.commons.ExceptionProcessor;
 import org.choongang.commons.Utils;
+import org.choongang.recipe.entities.Recipe;
+import org.choongang.recipe.service.RecipeInfoService;
 import org.choongang.recipe.service.RecipeSaveService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,12 +22,22 @@ import java.util.List;
 public class RecipeController implements ExceptionProcessor {
 
     private final RecipeSaveService recipeSaveService;
+    private final RecipeInfoService recipeInfoService;
     private final Utils utils;
+
+    private Recipe recipe;
 
     @GetMapping("/write")
     public String write(@ModelAttribute RequestRecipe form, Model model) {
         commonProcess("add", model);
         return utils.tpl("recipe/add");
+    }
+
+    @GetMapping("/edit/{seq}")
+    public String edit(@PathVariable("seq") Long seq, Model model) {
+        commonProcess(seq, "edit", model);
+
+        return utils.tpl("recipe/edit");
     }
 
     @PostMapping("/save")
@@ -64,5 +73,13 @@ public class RecipeController implements ExceptionProcessor {
         model.addAttribute("addCommonScript", addCommonScript);
         model.addAttribute("addScript", addScript);
         model.addAttribute("addCss", addCss);
+    }
+
+    private void commonProcess(Long seq, String mode, Model model) {
+        recipe = recipeInfoService.get(seq);
+
+        commonProcess(mode, model);
+
+        model.addAttribute("recipe", recipe);
     }
 }
