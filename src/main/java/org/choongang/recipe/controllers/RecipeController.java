@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.choongang.commons.ExceptionProcessor;
 import org.choongang.commons.Utils;
+import org.choongang.recipe.service.RecipeSaveService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -20,6 +21,8 @@ import java.util.List;
 @RequestMapping("/recipe")
 @RequiredArgsConstructor
 public class RecipeController implements ExceptionProcessor {
+
+    private final RecipeSaveService recipeSaveService;
     private final Utils utils;
 
     @GetMapping("/write")
@@ -37,8 +40,9 @@ public class RecipeController implements ExceptionProcessor {
             return utils.tpl("recipe/" + mode);
         }
 
+        recipeSaveService.save(form);
 
-        return "redirect:/recipe"; // 레서피 목록
+        return "redirect:/recipe/list"; // 레서피 목록
     }
 
     private void commonProcess(String mode, Model model) {

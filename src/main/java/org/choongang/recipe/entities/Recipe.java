@@ -6,8 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.choongang.commons.entities.Base;
+import org.choongang.file.entities.FileInfo;
 import org.choongang.member.entities.Member;
 
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -50,4 +52,7 @@ public class Recipe extends Base {
 
     @Lob
     private String condiments;
+
+    @Transient
+    private List<FileInfo> mainImages;
 }

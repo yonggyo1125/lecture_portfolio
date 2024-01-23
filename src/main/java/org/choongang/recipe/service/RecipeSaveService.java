@@ -42,7 +42,5 @@ public class RecipeSaveService {
         recipeRepository.saveAndFlush(recipe);
 
         fileUploadService.processDone(form.getGid());
-
-
     }
 }
