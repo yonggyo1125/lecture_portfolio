@@ -487,3 +487,169 @@ function thumbsClickHandler(thumb) {
   });
 }
 ```
+
+## 엔티티 및 레포지토리 구성 
+
+> recipe/entities/Recipe.java
+
+```java 
+package org.choongang.recipe.entities;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.choongang.commons.entities.Base;
+import org.choongang.member.entities.Member;
+
+import java.util.UUID;
+
+@Data
+@Builder
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
+public class Recipe extends Base {
+
+    @Id
+    @GeneratedValue
+    private Long seq;
+
+    @Column(length=65, nullable = false)
+    private String gid = UUID.randomUUID().toString();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="memberSeq")
+    private Member member;
+
+    @Column(length=100, nullable = false)
+    private String rcpName;
+
+    @Lob
+    private String rcpInfo;
+
+    private int estimatedT;
+
+    @Column(length=60)
+    private String category;
+
+    @Column(length=60)
+    private String subCategory;
+
+    @Lob
+    private String requiredIng;
+
+    @Lob
+    private String subIng;
+
+    @Lob
+    private String condiments;
+}
+```
+
+> recipe/repositories/RecipeRepository.java
+
+```java
+package org.choongang.recipe.repositories;
+
+import org.choongang.recipe.entities.Recipe;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+
+public interface RecipeRepository extends JpaRepository<Recipe, Long>, QuerydslPredicateExecutor<Recipe> {
+
+}
+```
+
+
+## 서비스 구성 
+
+> resources/messages/errors.properties
+
+```properties
+...
+
+NotFound.recipe=레서피를 찾을 수 없습니다.
+
+```
+
+> recipe/service/RecipeNotFoundException.java
+
+```java
+package org.choongang.recipe.service;
+
+import org.choongang.commons.Utils;
+import org.choongang.commons.exceptions.AlertBackException;
+import org.springframework.http.HttpStatus;
+
+public class RecipeNotFoundException extends AlertBackException {
+    public RecipeNotFoundException() {
+        super(Utils.getMessage("NotFound.recipe", "errors"), HttpStatus.NOT_FOUND);
+    }
+}
+```
+
+> recipe/service/RecipeSaveService.java
+
+```java
+package org.choongang.recipe.service;
+
+import lombok.RequiredArgsConstructor;
+import org.choongang.file.service.FileUploadService;
+import org.choongang.member.MemberUtil;
+import org.choongang.recipe.controllers.RequestRecipe;
+import org.choongang.recipe.entities.Recipe;
+import org.choongang.recipe.repositories.RecipeRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
+@Service
+@RequiredArgsConstructor
+public class RecipeSaveService {
+    private final RecipeRepository recipeRepository;
+    private final FileUploadService fileUploadService;
+    private final MemberUtil memberUtil;
+
+    public void save(RequestRecipe form) {
+        Long seq = form.getSeq();
+        String mode = form.getMode();
+        mode = StringUtils.hasText(mode) ? mode : "add";
+
+        Recipe recipe = null;
+        if (mode.equals("add") && seq != null) {
+            recipe = recipeRepository.findById(seq).orElseThrow(RecipeNotFoundException::new);
+        } else {
+            recipe = new Recipe();
+            recipe.setGid(form.getGid());
+            recipe.setMember(memberUtil.getMember());
+        }
+
+        recipe.setRcpName(form.getRcpName());
+        recipe.setRcpInfo(form.getRcpInfo());
+        recipe.setEstimatedT(form.getEstimatedT());
+        recipe.setCategory(form.getCategory());
+        recipe.setSubCategory(form.getSubCategory());
+        recipe.setRequiredIng(form.getRequiredIngJSON());
+        recipe.setSubIng(form.getSubIngJSON());
+        recipe.setCondiments(form.getCondimentsJSON());
+
+        recipeRepository.saveAndFlush(recipe);
+
+        fileUploadService.processDone(form.getGid());
+    }
+}
+```
+
+> recipe/service/RecipeInfoService.java
+
+```java
+
+```
+
+> recipe/service/RecipeDeleteService.java
+
+```java
+
+```
+

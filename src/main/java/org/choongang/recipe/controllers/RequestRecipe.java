@@ -40,6 +40,7 @@ public class RequestRecipe {
     private String[] condimentsEa; // 양념 수량
 
     public RequestRecipe() {
+
         om = new ObjectMapper();
     }
 
