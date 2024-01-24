@@ -20,12 +20,20 @@
     <tr>
         <th>
             진열상품
-            <button type="button" class="sbtn add_product" th:data-num="*{code}" th:onclick="*{'commonLib.popup.open(\'/admin/product/popup_select?target=items_' + code + '\', 550, 600)'}">
+            <button type="button" class="sbtn add_product" th:data-num="*{code}">
                 <i class="xi-plus"></i> 상품선택
             </button>
         </th>
         <td class="items" th:id="*{'items_' + code}">
-
+            <div th:if="*{items != null}" th:each="item : *{items}" th:object="${item}"
+                 class="item" th:id="${#strings.concat('item_', data.code, '_', item.seq)}">
+                <input type="hidden" th:name="${'seq_' + data.code}" th:value="*{seq}">
+                <div class="image">
+                    <img th:if="*{listImages != null && !listImages.isEmpty()}" th:src="*{listImages[0].fileUrl}" width="60">
+                    <th:block th:if="*{listImages == null || listImages.isEmpty()}">이미지 없음</th:block>
+                </div>
+                <div class="product_name" th:text="*{name}"></div>
+            </div>
         </td>
     </tr>
 </table>

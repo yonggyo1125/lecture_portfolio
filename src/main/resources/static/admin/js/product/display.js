@@ -17,6 +17,9 @@ const productDisplay = {
 
         const removeDisplayEl = tableEl.querySelector(".remove_display");
         removeDisplayEl.addEventListener("click", () => productDisplay.removeDisplay(num));
+
+        const addProduct = tableEl.querySelector(".add_product");
+        addProduct.addEventListener("click", productDisplay.popupSelect);
     },
     /**
     * 진열 제거
@@ -25,6 +28,15 @@ const productDisplay = {
     removeDisplay(num) {
         const displayEl = document.getElementById(`display_${num}`);
         if (displayEl) displayEl.parentElement.removeChild(displayEl);
+    },
+    /**
+    * 상품 선택 팝업
+    *
+    */
+    popupSelect() {
+        const code = this.dataset.num;
+        const { popup } = commonLib;
+        popup.open(`/admin/product/popup_select?target=items_${code}`, 550, 600);
     }
 };
 
@@ -33,6 +45,26 @@ window.addEventListener("DOMContentLoaded", function() {
     // 진열 추가
     addDisplayButton.addEventListener("click", productDisplay.addDisplay);
 
+
+    // 상품 추가 버튼 처리
+    const addProducts = document.getElementsByClassName("add_product");
+    for (const el of addProducts) {
+        el.addEventListener("click", productDisplay.popupSelect);
+    }
+
+    // 더블 클릭시 상품 제거
+    const items = document.querySelectorAll("#display_items .item");
+    for (const item of items) {
+        item.addEventListener("dblclick", function() {
+            this.parentElement.removeChild(this);
+        });
+    }
+
+    // 진열 항목 제거
+    const removeDisplayEls = document.getElementsByClassName("remove_display");
+    for (const el of removeDisplayEls) {
+        el.addEventListener("click", () => productDisplay.removeDisplay(el.dataset.num));
+    }
 });
 
 

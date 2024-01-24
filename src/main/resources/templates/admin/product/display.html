@@ -12,7 +12,11 @@
     </div>
     <form name="frmSave" method="post" th:action="@{/admin/product/display}" target="ifrmProcess" autocomplete="off">
         <ul id="display_items">
-
+            <th:block th:each="code : ${codes}">
+               <th:block th:each="data : ${@productDisplayService.getDisplayData(code)}">
+                   <table th:replace="~{admin/product/_display_item::item}"></table>
+               </th:block>
+            </th:block>
         </ul>
         <div class="submit_btns">
             <button type="button" class="btn">다시입력</button>
