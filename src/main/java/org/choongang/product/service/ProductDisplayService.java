@@ -1,11 +1,13 @@
 package org.choongang.product.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.choongang.admin.config.service.ConfigInfoService;
 import org.choongang.admin.config.service.ConfigSaveService;
 import org.choongang.commons.Utils;
 import org.choongang.commons.exceptions.AlertException;
+import org.choongang.product.entities.Product;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -38,5 +40,24 @@ public class ProductDisplayService {
             configSaveService.save("display_" + code,
                         new String[] { displayName, value });
         }
+    }
+
+    public DisplayData getDisplayData(Long code) {
+        
+        List<String> data = configInfoService.get("display_" + code, new TypeReference<List<String>>() {}).orElse(null);
+
+        if (data == null) {
+            return null;
+        }
+
+        List<Product> items = null;
+
+
+
+        return DisplayData.builder()
+                .code(code)
+                .displayName(data.get(0))
+                .items(items)
+                .build();
     }
 }
