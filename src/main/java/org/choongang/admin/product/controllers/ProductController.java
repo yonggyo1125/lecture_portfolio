@@ -247,6 +247,20 @@ public class ProductController implements ExceptionProcessor {
         return "common/_execute_script";
     }
 
+    @GetMapping("/display")
+    public String display(Model model) {
+        commonProcess("display", model);
+
+        return "admin/product/display";
+    }
+
+    @PostMapping("/display")
+    public String displayPs(Model model) {
+        commonProcess("display", model);
+
+        return "admin/product/display";
+    }
+
     /**
      * 공통 처리 부분
      * @param mode
@@ -267,6 +281,9 @@ public class ProductController implements ExceptionProcessor {
 
         } else if (mode.equals("category")) {
             pageTitle = "상품 분류";
+        } else if (mode.equals("display")) {
+            pageTitle = "상품 진열 관리";
+            addScript.add("product/display");
         }
 
         model.addAttribute("pageTitle", pageTitle);

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/layouts/main}">
+<section layout:fragment="content">
+
+
+    <script type="text/html" id="tpl">
+        <table class="table_cols">
+            <tr>
+                <th>진열 명칭</th>
+                <td>
+                    <input type="hidden" name="num" value="[num]">
+                    <input type="text" name="displayName_[num]">
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    진열상품
+                    <button type="button" class="sbtn add_product" data-num="[num]">
+                        <i class="xi-plus"></i> 상품선택
+                    </button>
+                </th>
+                <td class="items" id="items_[num]">
+
+                </td>
+            </tr>
+        </table>
+    </script>
+</section>
+</html>
