@@ -11,10 +11,19 @@
         </button>
     </div>
 
+    <ul id="display_items">
+
+    </ul>
+
     <script type="text/html" id="tpl">
-        <table class="table_cols">
+        <table class="table_cols" id="display_[num]">
             <tr>
-                <th>진열 명칭</th>
+                <th>
+                    진열 명칭
+                    <button type="button" class="sbtn remove_display" data-num="[num]">
+                        <i class="xi-minus"> 진열 제거</i>
+                    </button>
+                </th>
                 <td>
                     <input type="hidden" name="num" value="[num]">
                     <input type="text" name="displayName_[num]">
