@@ -1,7 +1,9 @@
 package org.choongang.admin.product.controllers;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.choongang.admin.config.service.ConfigInfoService;
 import org.choongang.admin.menus.Menu;
 import org.choongang.admin.menus.MenuDetail;
 import org.choongang.commons.ExceptionProcessor;
@@ -40,6 +42,7 @@ public class ProductController implements ExceptionProcessor {
     private final ProductDeleteService productDeleteService;
 
     private final ProductDisplayService productDisplayService;
+    private final ConfigInfoService configInfoService;
 
     @ModelAttribute("menuCode")
     public String getMenuCode() {
@@ -251,6 +254,10 @@ public class ProductController implements ExceptionProcessor {
     @GetMapping("/display")
     public String display(Model model) {
         commonProcess("display", model);
+
+        List<Long> codes = configInfoService.get("displayCodes", new TypeReference<List<Long>>() {}).orElse(null);
+
+        model.addAttribute("codes", codes);
 
         return "admin/product/display";
     }
