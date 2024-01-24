@@ -5,8 +5,8 @@
 
 <main layout:fragment="content">
     <h1>상품 선택</h1>
-    <h2>상품 검색</h2>
-    <form name="frmSearch" method="get" th:action="@{/admin/product}" autocomplete="off" th:object="${productSearch}">
+    <form name="frmSearch" method="get" th:action="@{/admin/product/popup_select}" autocomplete="off" th:object="${productSearch}">
+        <input th:if="${!#strings.isEmpty(param.target)}" type="hidden" name="target" th:value="${param.target}">
         <table class="table_cols">
             <tr>
                 <th width="120">상품분류</th>
