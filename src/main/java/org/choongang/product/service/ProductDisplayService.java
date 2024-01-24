@@ -5,11 +5,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.choongang.admin.config.service.ConfigInfoService;
 import org.choongang.admin.config.service.ConfigSaveService;
+import org.choongang.commons.ListData;
 import org.choongang.commons.Utils;
 import org.choongang.commons.exceptions.AlertException;
+import org.choongang.product.controllers.ProductSearch;
 import org.choongang.product.entities.Product;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -49,10 +52,21 @@ public class ProductDisplayService {
         if (data == null) {
             return null;
         }
+        String value = data.get(1);
+        List<Long> seqes = StringUtils.hasText(value) ?
+                                Arrays.stream(value.split(","))
+                                        .map(Long::valueOf).toList() : null;
 
-        List<Product> items = null;
+        if (seqes == null) {
+            return null;
+        }
 
+        ProductSearch search = new ProductSearch();
+        search.setLimit(1000);
+        search.setSeq(seqes);
 
+        ListData<Product> listData = productInfoService.getList(search, true);
+        List<Product> items = listData.getItems();
 
         return DisplayData.builder()
                 .code(code)
