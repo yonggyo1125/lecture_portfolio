@@ -261,6 +261,22 @@ public class ProductController implements ExceptionProcessor {
         return "admin/product/display";
     }
 
+    @GetMapping("/popup_select")
+    public String popupSelect(@RequestParam("target") String target,
+                              @ModelAttribute ProductSearch search, Model model) {
+
+        search.setLimit(7);
+
+        ListData<Product> data = productInfoService.getList(search, true);
+
+        model.addAttribute("items", data.getItems());
+        model.addAttribute("pagination", data.getPagination());
+
+        model.addAttribute("addScript", new String[] {"product/popup_select"});
+
+        return "admin/product/popup_select";
+    }
+
     /**
      * 공통 처리 부분
      * @param mode
