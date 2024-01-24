@@ -3,7 +3,7 @@ window.addEventListener("DOMContentLoaded", function() {
     selectProducts.addEventListener("click", function() {
 
         const targetEl = document.querySelector("input[name='target']");
-        const target = targetEl ? targetEl.value || "";
+        const target = targetEl ? targetEl.value : "";
 
         const chks = document.querySelectorAll("input[name='chk']:checked");
 
