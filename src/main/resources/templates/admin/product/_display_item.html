@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<table th:fragment="item" th:object="${data}" class="table_cols mb30" th:id="*{'display_' + code}">
+    <tr>
+        <th width="180">진열코드</th>
+        <td th:text="*{code}"></td>
+    </tr>
+    <tr>
+        <th>
+            진열 명칭
+            <button type="button" class="sbtn remove_display" th:data-num="*{code}">
+                <i class="xi-minus"> 진열 제거</i>
+            </button>
+        </th>
+        <td>
+            <input type="hidden" name="num" th:value="*{code}">
+            <input type="text" th:name="*{'displayName_' + code}" th:value="*{displayName}">
+        </td>
+    </tr>
+    <tr>
+        <th>
+            진열상품
+            <button type="button" class="sbtn add_product" th:data-num="*{code}" th:onclick="*{'commonLib.popup.open(\'/admin/product/popup_select?target=items_' + code + '\', 550, 600)'}">
+                <i class="xi-plus"></i> 상품선택
+            </button>
+        </th>
+        <td class="items" th:id="*{'items_' + code}">
+
+        </td>
+    </tr>
+</table>
+</html>
