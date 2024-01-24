@@ -28,7 +28,7 @@ public class UpBitHandler extends TextWebSocketHandler {
         sessions.add(session);
 
         UpBitTickerSearch search = new UpBitTickerSearch();
-        search.setInterval(5L);
+        search.setInterval(300L);
         ObjectMapper om = new ObjectMapper();
         om.registerModule(new JavaTimeModule());
         while(true) {
@@ -39,7 +39,7 @@ public class UpBitHandler extends TextWebSocketHandler {
                 s.sendMessage(jsonData);
             }
 
-            Thread.sleep(6000);
+            Thread.sleep(300000);
         }
     }
 
