@@ -1,14 +1,39 @@
-package org.choongang.upbit;
+package org.choongang.upbit.entities;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Data
+@Builder
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
 public class UpBitTicker {
+    @Id
+    @GeneratedValue
+    @JsonIgnore
+    private Long seq;
+
+    @Column(length=30)
     private String market;
+
+    @JsonIgnore
+    private String korean_name;
+
+    @JsonIgnore
+    private String english_name;
 
     @JsonFormat(pattern="yyyyMMdd")
     private LocalDate trade_date;
@@ -22,6 +47,9 @@ public class UpBitTicker {
     @JsonFormat(pattern="HHmmss")
     private LocalTime trade_time_kst;
 
+    @JsonIgnore
+    private LocalDateTime tradeDateTime;
+
     private Long trade_timestamp;
 
     private Long opening_price;
@@ -34,6 +62,7 @@ public class UpBitTicker {
 
     private Long prev_closing_price;
 
+    @Column(length=30)
     private String change;
 
     private Long change_price;
