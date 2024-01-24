@@ -255,7 +255,7 @@ public class ProductController implements ExceptionProcessor {
     }
 
     @PostMapping("/display")
-    public String displayPs(Model model) {
+    public String displayPs(@RequestParam("num") List<Long> codes, Model model) {
         commonProcess("display", model);
 
         return "admin/product/display";

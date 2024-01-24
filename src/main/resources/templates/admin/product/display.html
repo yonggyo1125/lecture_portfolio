@@ -10,10 +10,15 @@
             진열 추가
         </button>
     </div>
+    <form name="frmSave" method="post" th:action="@{/admin/product/display}" target="ifrmProcess" autocomplete="off">
+        <ul id="display_items">
 
-    <ul id="display_items">
-
-    </ul>
+        </ul>
+        <div class="submit_btns">
+            <button type="button" class="btn">다시입력</button>
+            <button type="submit" class="btn">저장하기</button>
+        </div>
+    </form>
 
     <script type="text/html" id="tpl">
         <table class="table_cols mb30" id="display_[num]">
