@@ -1,6 +1,9 @@
 package org.choongang.commons;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -284,5 +287,16 @@ public class Utils {
         String sessId = session.getId();
 
         return Objects.hash(ip, ua, sessId);
+    }
+
+    public String toJson(Object item) {
+        ObjectMapper om = new ObjectMapper();
+        om.registerModule(new JavaTimeModule());
+
+        try {
+           return om.writeValueAsString(item);
+        } catch (JsonProcessingException e) {}
+
+        return "{}";
     }
 }

@@ -65,8 +65,9 @@
             </tr>
             <tr th:unless="${items == null || items.isEmpty()}" th:each="item, status : ${items}" th:object="${item}">
                 <td>
-                    <input type="hidden" th:name="${'seq_' + status.index}" th:value="*{seq}">
-                    <input type="checkbox" name="chk" th:value="${status.index}" th:id="${'chk_' + status.index}">
+                    <input type="checkbox" name="chk" th:value="${status.index}" th:id="${'chk_' + status.index}"
+                           th:data-item="${@utils.toJson(item)}"
+                    >
                     <label th:for="${'chk_' + status.index}"></label>
                 </td>
                 <td th:text="*{seq}"></td>
@@ -83,6 +84,7 @@
             </tr>
             </tbody>
         </table>
+        <button type="button" id="select_products">상품 선택</button>
     <th:block th:replace="~{common/_pagination::pagination}"></th:block>
 </main>
 </html>
