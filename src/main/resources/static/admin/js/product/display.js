@@ -12,14 +12,19 @@ const productDisplay = {
         const dom = domParser.parseFromString(html, "text/html");
         const tableEl = dom.querySelector("table");
 
-        console.log(tableEl);
+        const displayItemsEl = document.getElementById("display_items");
+        displayItemsEl.appendChild(tableEl);
+
+        const removeDisplayEl = tableEl.querySelector(".remove_display");
+        removeDisplayEl.addEventListener("click", () => productDisplay.removeDisplay(num));
     },
     /**
     * 진열 제거
     *
     */
-    removeDisplay() {
-
+    removeDisplay(num) {
+        const displayEl = document.getElementById(`display_${num}`);
+        if (displayEl) displayEl.parentElement.removeChild(displayEl);
     }
 };
 
