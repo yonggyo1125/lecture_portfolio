@@ -39,6 +39,7 @@ public class ProductController implements ExceptionProcessor {
     private final ProductInfoService productInfoService;
     private final ProductDeleteService productDeleteService;
 
+    private final ProductDisplayService productDisplayService;
 
     @ModelAttribute("menuCode")
     public String getMenuCode() {
@@ -258,7 +259,11 @@ public class ProductController implements ExceptionProcessor {
     public String displayPs(@RequestParam("num") List<Long> codes, Model model) {
         commonProcess("display", model);
 
-        return "admin/product/display";
+        productDisplayService.save(codes);
+
+        model.addAttribute("script", "parent.location.reload();");
+
+        return "common/_execute_script";
     }
 
     @GetMapping("/popup_select")
