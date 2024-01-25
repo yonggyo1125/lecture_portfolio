@@ -25,6 +25,7 @@ import org.choongang.recipe.repositories.RecipeRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -190,7 +191,13 @@ public class RecipeInfoService {
     }
 
     public List<String> getIngredients() {
+        List<String> keywordTmp = recipeRepository.getIngredients();
 
-        return null;
+        return keywordTmp == null ? null :
+                    keywordTmp.stream().filter(StringUtils::hasText)
+                            .flatMap(s -> Arrays.stream(s.split("__")))
+                            .filter(StringUtils::hasText)
+                            .distinct()
+                            .toList();
     }
 }

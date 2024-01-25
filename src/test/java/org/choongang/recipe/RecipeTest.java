@@ -38,4 +38,10 @@ public class RecipeTest {
         List<String> keywords = recipeRepository.getIngredients();
         keywords.forEach(System.out::println);
     }
+
+    @Test
+    void test3() {
+        List<String> keywords = infoService.getIngredients();
+        keywords.forEach(System.out::println);
+    }
 }
