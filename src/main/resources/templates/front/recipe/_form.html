@@ -5,8 +5,12 @@
     <input type="hidden" name="gid" th:field="*{gid}">
     <input th:if="*{seq != null}" type="hidden" name="seq" th:field="*{seq}">
     <div class="main_image_box">
-        <div class="upload_files" th:classappend="*{mainImages != null && !mainImages.isEmpty()} ? 'uploaded'" id="main_images" data-image-only="true"
+        <div th:if="*{mainImages != null && !mainImages.isEmpty()}" class="upload_files uploaded" id="main_images" data-image-only="true"
              th:style="*{@utils.backgroundStyle(mainImages[0], 600, 600)}">
+            <i class="xi-plus"></i>
+            <div class="txt" th:text="#{대표_이미지_업로드}"></div>
+        </div>
+        <div th:unless="*{mainImages != null && !mainImages.isEmpty()}" class="upload_files" id="main_images" data-image-only="true">
             <i class="xi-plus"></i>
             <div class="txt" th:text="#{대표_이미지_업로드}"></div>
         </div>

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -120,11 +121,44 @@ public class RecipeInfoService {
         QRecipe recipe = QRecipe.recipe;
         BooleanBuilder andBuilder = new BooleanBuilder();
 
-        String skey = search.getSkey();
+
+        /* 검색 조건 처리 S */
+        String sopt = search.getSopt(); // 옵션
+        String skey = search.getSkey(); // 키워드
+
+
+        sopt = StringUtils.hasText(sopt) ? sopt : "all";
+
         if (StringUtils.hasText(skey)) {
             skey = skey.trim();
-            andBuilder.and(recipe.keyword.contains("__" + skey + "__"));
+            BooleanExpression rcpCond = recipe.rcpName.contains(skey); // 제목 - rcpName LIKE '%skey%';
+            BooleanExpression nameCond = recipe.member.name.contains(skey);
+            BooleanExpression userIdCond = recipe.member.userId.contains(skey);
+            BooleanExpression rcpIngCond = recipe.keyword.contains("__" + skey + "__");
+
+            if (sopt.equals("rcpName")) { // 제목
+                andBuilder.and(rcpCond);
+            } else if (sopt.equals("member")) { // 닉네임 + 아이디 (OR)
+                BooleanBuilder orBuilder = new BooleanBuilder();
+                orBuilder.or(nameCond)
+                        .or(userIdCond);
+                andBuilder.and(orBuilder);
+            } else if (sopt.equals("rcpIng")) { // 재료 + 양념
+                andBuilder.and(rcpIngCond);
+
+            } else if (sopt.equals("all")) {
+                // 닉네임+아이디도 추가해야함
+                BooleanBuilder orBuilder = new BooleanBuilder();
+                orBuilder.or(nameCond)
+                        .or(userIdCond)
+                        .or(rcpCond)
+                        .or(rcpIngCond);
+
+               andBuilder.and(orBuilder);
+
+            }
         }
+        /* 검색 조건 처리 E */
 
         PathBuilder<Recipe> pathBuilder = new PathBuilder<>(Recipe.class, "recipe");
         List<Recipe> items = new JPAQueryFactory(em).selectFrom(recipe)
@@ -132,6 +166,7 @@ public class RecipeInfoService {
                 .fetchJoin()
                 .offset(offset)
                 .limit(limit)
+                .where(andBuilder)
                 .orderBy(
                         new OrderSpecifier(Order.DESC, pathBuilder.get("createdAt"))
                 )
@@ -152,5 +187,10 @@ public class RecipeInfoService {
         List<FileInfo> mainImages = fileInfoService.getListDone(gid);
         data.setMainImages(mainImages);
 
+    }
+
+    public List<String> getIngredients() {
+
+        return null;
     }
 }
