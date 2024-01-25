@@ -61,6 +61,7 @@ public class RecipeInfoService {
                 .category(data.getCategory())
                 .subCategory(data.getSubCategory())
                 .mainImages(data.getMainImages())
+                .amount(data.getAmount())
                 .build();
 
         try {

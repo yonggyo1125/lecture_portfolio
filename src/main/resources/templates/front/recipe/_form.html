@@ -2,7 +2,6 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <th:block th:fragment="form" th:object="${requestRecipe}">
     <div class="error global" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></div>
-
     <input type="hidden" name="gid" th:field="*{gid}">
 
     <div class="main_image_box">
@@ -57,7 +56,10 @@
     <div class="rows">
         <div class="stit" th:text="#{필수재료}"></div>
 
-        <div class="input_item_box" id="requiredIng"></div>
+        <div class="input_item_box" id="requiredIng">
+            <div class="item_box"><input placeholder="예) 당근" type="text" name="requiredIng"><input placeholder="1 개" type="text" name="requiredIngEa"><button type="button"><i class="remove_item xi-close"></i></button></div>
+
+        </div>
         <button type="button" th:text="#{추가}" data-id="requiredIng" data-name="requiredIng" class="add_input_item"></button>
     </div>
     <div class="rows">
