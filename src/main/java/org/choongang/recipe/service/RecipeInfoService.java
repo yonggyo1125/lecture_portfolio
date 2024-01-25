@@ -53,6 +53,7 @@ public class RecipeInfoService {
         Recipe data = get(seq);
 
         RequestRecipe form = RequestRecipe.builder()
+                .mode("edit")
                 .seq(data.getSeq())
                 .gid(data.getGid())
                 .rcpName(data.getRcpName())
@@ -118,6 +119,12 @@ public class RecipeInfoService {
 
         QRecipe recipe = QRecipe.recipe;
         BooleanBuilder andBuilder = new BooleanBuilder();
+
+        String skey = search.getSkey();
+        if (StringUtils.hasText(skey)) {
+            skey = skey.trim();
+            andBuilder.and(recipe.keyword.contains("__" + skey + "__"));
+        }
 
         PathBuilder<Recipe> pathBuilder = new PathBuilder<>(Recipe.class, "recipe");
         List<Recipe> items = new JPAQueryFactory(em).selectFrom(recipe)

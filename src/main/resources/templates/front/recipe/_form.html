@@ -3,7 +3,7 @@
 <th:block th:fragment="form" th:object="${requestRecipe}">
     <div class="error global" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></div>
     <input type="hidden" name="gid" th:field="*{gid}">
-
+    <input th:if="*{seq != null}" type="hidden" name="seq" th:field="*{seq}">
     <div class="main_image_box">
         <div class="upload_files" th:classappend="*{mainImages != null && !mainImages.isEmpty()} ? 'uploaded'" id="main_images" data-image-only="true"
              th:style="*{@utils.backgroundStyle(mainImages[0], 600, 600)}">

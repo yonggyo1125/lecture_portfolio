@@ -55,6 +55,9 @@ public class Recipe extends Base {
     @Lob
     private String condiments;
 
+    @Column(length=150)
+    private String keyword;
+
     @Transient
     private List<FileInfo> mainImages;
 }
