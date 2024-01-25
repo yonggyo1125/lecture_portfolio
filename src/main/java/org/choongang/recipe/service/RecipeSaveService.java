@@ -38,6 +38,7 @@ public class RecipeSaveService {
         recipe.setRequiredIng(form.getRequiredIngJSON());
         recipe.setSubIng(form.getSubIngJSON());
         recipe.setCondiments(form.getCondimentsJSON());
+        recipe.setAmount(form.getAmount());
 
         recipeRepository.saveAndFlush(recipe);
 

@@ -4,9 +4,6 @@
     <div class="error global" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></div>
 
     <input type="hidden" name="gid" th:field="*{gid}">
-    <input type="hidden" name="requiredIngJSON" th:field="*{requiredIngJSON}">
-    <input type="hidden" name="subIngJSON" th:field="*{subIngJSON}">
-    <input type="hidden" name="condimentsJSON" th:field="*{condimentsJSON}">
 
     <div class="main_image_box">
         <div class="upload_files" id="main_images" data-image-only="true">

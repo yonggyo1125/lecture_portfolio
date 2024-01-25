@@ -35,7 +35,10 @@ public class RecipeController implements ExceptionProcessor {
 
     @GetMapping("/edit/{seq}")
     public String edit(@PathVariable("seq") Long seq, Model model) {
-        commonProcess(seq, "edit", model);
+        commonProcess("edit", model);
+
+        RequestRecipe form = recipeInfoService.getForm(seq);
+        model.addAttribute("requestRecipe", form);
 
         return utils.tpl("recipe/edit");
     }
@@ -61,8 +64,8 @@ public class RecipeController implements ExceptionProcessor {
         List<String> addCss = new ArrayList<>();
         List<String> addCommonScript = new ArrayList<>();
         List<String> addScript = new ArrayList<>();
-
-        if (mode.equals("add") || model.equals("edit")) {
+        System.out.println("mode : " + mode);
+        if (mode.equals("add") || mode.equals("edit")) {
             addCss.add("recipe/style");
             addCommonScript.add("fileManager");
             addScript.add("recipe/form");

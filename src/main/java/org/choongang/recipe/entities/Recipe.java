@@ -44,6 +44,8 @@ public class Recipe extends Base {
     @Column(length=60)
     private String subCategory;
 
+    private int amount;
+
     @Lob
     private String requiredIng;
 
