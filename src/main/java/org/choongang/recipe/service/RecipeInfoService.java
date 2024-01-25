@@ -22,6 +22,7 @@ import org.choongang.recipe.entities.QRecipe;
 import org.choongang.recipe.entities.Recipe;
 import org.choongang.recipe.repositories.RecipeRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -50,24 +51,7 @@ public class RecipeInfoService {
 
     public RequestRecipe getForm(Long seq) {
         Recipe data = get(seq);
-        String[] requiredIng = null;
-        String[] requiredIngEa = null;
-        String[] subIng = null;
-        String[] condiments = null;
-        try {
-            ObjectMapper om = new ObjectMapper();
 
-            if (data.getRequiredIng() == null) {
-                List<String[]> requiredIngTmp = om.readValue(data.getRequiredIng(), new TypeReference<>() {
-                });
-
-
-            }
-
-
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
         RequestRecipe form = RequestRecipe.builder()
                 .seq(data.getSeq())
                 .gid(data.getGid())
@@ -76,10 +60,52 @@ public class RecipeInfoService {
                 .estimatedT(data.getEstimatedT())
                 .category(data.getCategory())
                 .subCategory(data.getSubCategory())
-                .requiredIng(requiredIng)
-                .subIng(condiments)
                 .mainImages(data.getMainImages())
                 .build();
+
+        try {
+            ObjectMapper om = new ObjectMapper();
+
+            if (StringUtils.hasText(data.getRequiredIng())) {
+                List<String[]> requiredIngTmp = om.readValue(data.getRequiredIng(), new TypeReference<>() {});
+                // 필수 재료 내용
+                String[] requiredIng = requiredIngTmp.stream().map(s -> s[0]).toArray(String[]::new);
+            
+                // 필수 재료 수량
+                String[] requiredIngEa = requiredIngTmp.stream().map(s -> s[1]).toArray(String[]::new);
+
+                form.setRequiredIng(requiredIng);
+                form.setRequiredIngEa(requiredIngEa);
+            }
+
+            if (StringUtils.hasText(data.getSubIng())) {
+                List<String[]> subIngTmp = om.readValue(data.getSubIng(), new TypeReference<>() {});
+                // 부 재료 내용
+                String[] subIng = subIngTmp.stream().map(s -> s[0]).toArray(String[]::new);
+
+                // 부 재료 수량
+                String[] subIngEa = subIngTmp.stream().map(s -> s[1]).toArray(String[]::new);
+
+                form.setSubIng(subIng);
+                form.setSubIngEa(subIngEa);
+            }
+
+            if (StringUtils.hasText(data.getCondiments())) {
+                List<String[]> condimentsTmp = om.readValue(data.getCondiments(), new TypeReference<>() {});
+                // 양념 내용
+                String[] condiments = condimentsTmp.stream().map(s -> s[0]).toArray(String[]::new);
+
+                // 양념 수량
+                String[] condimentsEa = condimentsTmp.stream().map(s -> s[1]).toArray(String[]::new);
+
+                form.setCondiments(condiments);
+                form.setCondimentsEa(condimentsEa);
+            }
+
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
 
         return form;
     }
