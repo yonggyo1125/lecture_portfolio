@@ -124,6 +124,16 @@ public class RecipeInfoService {
 
 
         /* 검색 조건 처리 S */
+        String category = search.getCategory();
+        String subCategory = search.getSubCategory();
+        if (StringUtils.hasText(category)) {
+            andBuilder.and(recipe.category.eq(category.trim()));
+        }
+
+        if (StringUtils.hasText(subCategory)) {
+            andBuilder.and(recipe.subCategory.eq(subCategory.trim()));
+        }
+
         String sopt = search.getSopt(); // 옵션
         String skey = search.getSkey(); // 키워드
 

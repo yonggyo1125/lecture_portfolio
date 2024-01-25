@@ -9,4 +9,7 @@ public class RecipeDataSearch {
 
     private String sopt;
     private String skey;
+
+    private String category;
+    private String subCategory;
 }
