@@ -487,3 +487,255 @@ function thumbsClickHandler(thumb) {
   });
 }
 ```
+
+## 엔티티 및 레포지토리 구성 
+
+> recipe/entities/Recipe.java
+
+```java 
+package org.choongang.recipe.entities;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.choongang.commons.entities.Base;
+import org.choongang.file.entities.FileInfo;
+import org.choongang.member.entities.Member;
+
+import java.util.List;
+import java.util.UUID;
+
+@Data
+@Builder
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
+public class Recipe extends Base {
+
+    @Id
+    @GeneratedValue
+    private Long seq;
+
+    @Column(length=65, nullable = false)
+    private String gid = UUID.randomUUID().toString();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="memberSeq")
+    private Member member;
+
+    @Column(length=100, nullable = false)
+    private String rcpName;
+
+    @Lob
+    private String rcpInfo;
+
+    private int estimatedT;
+
+    @Column(length=60)
+    private String category;
+
+    @Column(length=60)
+    private String subCategory;
+
+    @Lob
+    private String requiredIng;
+
+    @Lob
+    private String subIng;
+
+    @Lob
+    private String condiments;
+
+    @Transient
+    private List<FileInfo> mainImages;
+}
+```
+
+> recipe/repositories/RecipeRepository.java
+
+```java
+package org.choongang.recipe.repositories;
+
+import org.choongang.recipe.entities.Recipe;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+
+public interface RecipeRepository extends JpaRepository<Recipe, Long>, QuerydslPredicateExecutor<Recipe> {
+
+}
+```
+
+
+## 서비스 구성 
+
+> resources/messages/errors.properties
+
+```properties
+...
+
+NotFound.recipe=레서피를 찾을 수 없습니다.
+
+```
+
+> recipe/service/RecipeNotFoundException.java
+
+```java
+package org.choongang.recipe.service;
+
+import org.choongang.commons.Utils;
+import org.choongang.commons.exceptions.AlertBackException;
+import org.springframework.http.HttpStatus;
+
+public class RecipeNotFoundException extends AlertBackException {
+    public RecipeNotFoundException() {
+        super(Utils.getMessage("NotFound.recipe", "errors"), HttpStatus.NOT_FOUND);
+    }
+}
+```
+
+> recipe/service/RecipeSaveService.java
+
+```java
+package org.choongang.recipe.service;
+
+import lombok.RequiredArgsConstructor;
+import org.choongang.file.service.FileUploadService;
+import org.choongang.member.MemberUtil;
+import org.choongang.recipe.controllers.RequestRecipe;
+import org.choongang.recipe.entities.Recipe;
+import org.choongang.recipe.repositories.RecipeRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
+@Service
+@RequiredArgsConstructor
+public class RecipeSaveService {
+    private final RecipeRepository recipeRepository;
+    private final FileUploadService fileUploadService;
+    private final MemberUtil memberUtil;
+
+    public void save(RequestRecipe form) {
+        Long seq = form.getSeq();
+        String mode = form.getMode();
+        mode = StringUtils.hasText(mode) ? mode : "add";
+
+        Recipe recipe = null;
+        if (mode.equals("add") && seq != null) {
+            recipe = recipeRepository.findById(seq).orElseThrow(RecipeNotFoundException::new);
+        } else {
+            recipe = new Recipe();
+            recipe.setGid(form.getGid());
+            recipe.setMember(memberUtil.getMember());
+        }
+
+        recipe.setRcpName(form.getRcpName());
+        recipe.setRcpInfo(form.getRcpInfo());
+        recipe.setEstimatedT(form.getEstimatedT());
+        recipe.setCategory(form.getCategory());
+        recipe.setSubCategory(form.getSubCategory());
+        recipe.setRequiredIng(form.getRequiredIngJSON());
+        recipe.setSubIng(form.getSubIngJSON());
+        recipe.setCondiments(form.getCondimentsJSON());
+
+        recipeRepository.saveAndFlush(recipe);
+
+        fileUploadService.processDone(form.getGid());
+    }
+}
+```
+
+> recipe/service/RecipeInfoService.java
+
+```java
+package org.choongang.recipe.service;
+
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.PathBuilder;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.EntityManager;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import org.choongang.commons.ListData;
+import org.choongang.commons.Pagination;
+import org.choongang.commons.Utils;
+import org.choongang.file.entities.FileInfo;
+import org.choongang.file.service.FileInfoService;
+import org.choongang.recipe.controllers.RecipeDataSearch;
+import org.choongang.recipe.entities.QRecipe;
+import org.choongang.recipe.entities.Recipe;
+import org.choongang.recipe.repositories.RecipeRepository;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class RecipeInfoService {
+    private final RecipeRepository recipeRepository;
+    private final FileInfoService fileInfoService;
+    private final HttpServletRequest request;
+
+    private final EntityManager em;
+
+    /**
+     * 레서피 단일 조회
+     *
+     * @param seq
+     * @return
+     */
+    public Recipe get(Long seq) {
+        Recipe data = recipeRepository.findById(seq).orElseThrow(RecipeNotFoundException::new);
+
+        addRecipeInfo(data);
+
+        return data;
+    }
+
+    public ListData<Recipe> getList(RecipeDataSearch search) {
+        int page = Utils.onlyPositiveNumber(search.getPage(), 1);
+        int limit = Utils.onlyPositiveNumber(search.getLimit(), 20);
+        int offset = (page - 1) * limit;
+
+        QRecipe recipe = QRecipe.recipe;
+        BooleanBuilder andBuilder = new BooleanBuilder();
+
+        PathBuilder<Recipe> pathBuilder = new PathBuilder<>(Recipe.class, "recipe");
+        List<Recipe> items = new JPAQueryFactory(em).selectFrom(recipe)
+                .leftJoin(recipe.member)
+                .fetchJoin()
+                .offset(offset)
+                .limit(limit)
+                .orderBy(
+                        new OrderSpecifier(Order.DESC, pathBuilder.get("createdAt"))
+                )
+                .fetch();
+
+        int total = (int)recipeRepository.count(andBuilder);
+
+        Pagination pagination = new Pagination(page, total, 10, limit, request);
+
+        items.forEach(this::addRecipeInfo);
+
+        return new ListData<>(items, pagination);
+    }
+
+    private void addRecipeInfo(Recipe data) {
+        String gid = data.getGid();
+
+        List<FileInfo> mainImages = fileInfoService.getListDone(gid);
+        data.setMainImages(mainImages);
+
+    }
+}
+```
+
+> recipe/service/RecipeDeleteService.java
+
+```java
+
+```
+

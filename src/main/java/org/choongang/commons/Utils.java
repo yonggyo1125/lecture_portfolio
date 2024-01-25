@@ -1,6 +1,9 @@
 package org.choongang.commons;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -260,16 +263,25 @@ public class Utils {
 
     public String backgroundStyle(FileInfo file) {
 
-        String imageUrl = file.getFileUrl();
-        List<String> thumbsUrl = file.getThumbsUrl();
-        if (thumbsUrl != null && !thumbsUrl.isEmpty()) {
-            imageUrl = thumbsUrl.get(thumbsUrl.size() - 1);
-        }
-
-        String style = String.format("background:url('%s') no-repeat center center; background-size:cover;", imageUrl);
-
-        return style;
+        return backgroundStyle(file, 100, 100);
     }
+
+    public String backgroundStyle(FileInfo file, int width, int height) {
+
+        try {
+
+            String[] data = fileInfoService.getThumb(file.getSeq(), width, height);
+            String imageUrl = data[1];
+
+            String style = String.format("background:url('%s') no-repeat center center; background-size:cover;", imageUrl);
+
+            return style;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
 
     /**
      * 장바구니 비회원 UID
@@ -284,5 +296,16 @@ public class Utils {
         String sessId = session.getId();
 
         return Objects.hash(ip, ua, sessId);
+    }
+
+    public String toJson(Object item) {
+        ObjectMapper om = new ObjectMapper();
+        om.registerModule(new JavaTimeModule());
+
+        try {
+           return om.writeValueAsString(item);
+        } catch (JsonProcessingException e) {}
+
+        return "{}";
     }
 }

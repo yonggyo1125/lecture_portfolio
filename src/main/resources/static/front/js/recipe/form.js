@@ -1,17 +1,4 @@
 const recipeForm = {
-    init() {
-        // 필수재료, 부재료, 양념 등 완성 처리
-        const requiredIngJSON = document.getElementById("requiredIngJSON");
-
-        const subIngJSON = document.getElementById("subIngJSON");
-
-        const condimentsJSON = document.getElementById("condimentsJSON");
-
-        if (requiredIngJSON) {
-
-        }
-
-    },
     /**
     * 입력항목 추가
     *
@@ -29,6 +16,7 @@ const recipeForm = {
     *
     */
     deleteItem(e) {
+
         const el = e.currentTarget;
         const parentEl = el.parentElement;
         parentEl.parentElement.removeChild(parentEl);
@@ -55,7 +43,8 @@ const recipeForm = {
         inputEa.name = `${name}Ea`;
 
         closeButton.type = "button";
-        buttonIcon.className = "remove_item xi-close";
+        closeButton.className = "remove_item";
+        buttonIcon.className = "xi-close";
 
         closeButton.appendChild(buttonIcon);
 
@@ -70,8 +59,6 @@ const recipeForm = {
 };
 
 window.addEventListener("DOMContentLoaded", function() {
-
-    recipeForm.init();
 
     const thumbs = document.getElementsByClassName("image1_tpl_box");
     for (const el of thumbs) {
@@ -175,7 +162,6 @@ function thumbsClickHandler(thumb) {
    const mainImageEl = document.getElementById("main_images");
 
    thumb.addEventListener("click", function() {
-    console.log("클릭!")
     const url = this.dataset.url;
     mainImageEl.style.backgroundImage=`url('${url}')`;
   });

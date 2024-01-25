@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{front/layouts/popup}">
+
+<main layout:fragment="content">
+    <h1>상품 선택</h1>
+    <form name="frmSearch" method="get" th:action="@{/admin/product/popup_select}" autocomplete="off" th:object="${productSearch}">
+        <input th:if="${!#strings.isEmpty(param.target)}" type="hidden" name="target" th:value="${param.target}">
+        <table class="table_cols">
+            <tr>
+                <th width="120">상품분류</th>
+                <td colspan="3">
+                    <th:block th:each="c, status : ${categories}">
+                        <input type="checkbox" name="cateCd" th:value="${c.cateCd}" th:field="*{cateCd}" th:id="${'cateCd_' + status.index}">
+                        <label th:for="${'cateCd_' + status.index}" th:text="${c.cateNm}"></label>
+                    </th:block>
+                </td>
+            </tr>
+            <tr>
+                <th>등록일</th>
+                <td width="300">
+                    <input type="date" name="sdate" th:field="*{sdate}"> ~
+                    <input type="date" name="edate" th:field="*{edate}">
+                </td>
+                <th width="120">상품상태</th>
+                <td>
+                    <th:block th:each="s, status : ${productStatuses}">
+                        <input type="checkbox" name="statuses" th:value="${s[0]}" th:field="*{statuses}" th:id="${'statuses_' + status.index}">
+                        <label th:for="${'statuses_' + status.index}" th:text="${s[1]}"></label>
+                    </th:block>
+                </td>
+            </tr>
+            <tr>
+                <th>상품명</th>
+                <td>
+                    <input type="text" name="name" th:field="*{name}">
+                </td>
+                <th>상품번호</th>
+                <td>
+                    <input type="number" name="seq" th:field="*{seq}">
+                </td>
+            </tr>
+        </table>
+        <div class="search_btn">
+            <button type="submit" class="btn">검색하기</button>
+        </div>
+    </form>
+
+    <h2>상품 목록</h2>
+        <table class="table_rows">
+            <thead>
+            <tr>
+                <th width="40">
+                    <input type="checkbox" class="checkall" id="checkall" data-target-name="chk">
+                    <label for="checkall"></label>
+                </th>
+                <th width="100">상품번호</th>
+                <th nowrap colspan="2">상품명</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${items == null || items.isEmpty()}">
+                <td colspan="7" class="no_data">조회된 상품이 없습니다.</td>
+            </tr>
+            <tr th:unless="${items == null || items.isEmpty()}" th:each="item, status : ${items}" th:object="${item}">
+                <td>
+                    <input type="checkbox" name="chk" th:value="${status.index}" th:id="${'chk_' + status.index}"
+                           th:data-item="${@utils.toJson(item)}"
+                    >
+                    <label th:for="${'chk_' + status.index}"></label>
+                </td>
+                <td th:text="*{seq}"></td>
+                <td width="80">
+                    <a class="image" th:href="@{/product/detail/{seq}(seq=*{seq})}" target="_blank">
+                        <th:block th:if="*{listImages != null && !listImages.isEmpty()}" th:utext="*{@utils.printThumb(listImages[0].seq, 50, 50, 'goodsImage')}">
+                        </th:block>
+                        <th:block th:unless="*{listImages != null && !listImages.isEmpty()}">
+                            이미지 없음
+                        </th:block>
+                    </a>
+                </td>
+                <td th:text="*{name}"></td>
+            </tr>
+            </tbody>
+        </table>
+        <button type="button" id="select_products">상품 선택</button>
+    <th:block th:replace="~{common/_pagination::pagination}"></th:block>
+</main>
+</html>

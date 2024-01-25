@@ -39,3 +39,8 @@ ac { text-align: center !important; }
 
 /* 위지윅 에디터 공통 */
 .ck-editor__editable { min-height: 300px; }
+
+/* 플렉스 공통 */
+.flex { display: flex; }
+.flex.sb { justify-content: space-between; }
+.flex.aic { align-items: center; }

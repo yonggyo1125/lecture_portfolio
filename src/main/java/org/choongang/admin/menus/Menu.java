@@ -25,7 +25,8 @@ public class Menu {
         menus.put("product", Arrays.asList(
                 new MenuDetail("list", "상품목록", "/admin/product"),
                 new MenuDetail("add", "상품등록", "/admin/product/add"),
-                new MenuDetail("category", "상품분류", "/admin/product/category")
+                new MenuDetail("category", "상품분류", "/admin/product/category"),
+                new MenuDetail("display", "상품진열관리", "/admin/product/display")
         ));
 
         menus.put("board", Arrays.asList(
