@@ -16,6 +16,7 @@ const recipeForm = {
     *
     */
     deleteItem(e) {
+
         const el = e.currentTarget;
         const parentEl = el.parentElement;
         parentEl.parentElement.removeChild(parentEl);
@@ -42,7 +43,8 @@ const recipeForm = {
         inputEa.name = `${name}Ea`;
 
         closeButton.type = "button";
-        buttonIcon.className = "remove_item xi-close";
+        closeButton.className = "remove_item";
+        buttonIcon.className = "xi-close";
 
         closeButton.appendChild(buttonIcon);
 

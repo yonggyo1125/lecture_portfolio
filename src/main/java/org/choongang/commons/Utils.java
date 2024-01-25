@@ -263,16 +263,25 @@ public class Utils {
 
     public String backgroundStyle(FileInfo file) {
 
-        String imageUrl = file.getFileUrl();
-        List<String> thumbsUrl = file.getThumbsUrl();
-        if (thumbsUrl != null && !thumbsUrl.isEmpty()) {
-            imageUrl = thumbsUrl.get(thumbsUrl.size() - 1);
-        }
-
-        String style = String.format("background:url('%s') no-repeat center center; background-size:cover;", imageUrl);
-
-        return style;
+        return backgroundStyle(file, 100, 100);
     }
+
+    public String backgroundStyle(FileInfo file, int width, int height) {
+
+        try {
+
+            String[] data = fileInfoService.getThumb(file.getSeq(), width, height);
+            String imageUrl = data[1];
+
+            String style = String.format("background:url('%s') no-repeat center center; background-size:cover;", imageUrl);
+
+            return style;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
 
     /**
      * 장바구니 비회원 UID
