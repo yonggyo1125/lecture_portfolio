@@ -8,8 +8,10 @@ import org.choongang.cart.service.CartDeleteService;
 import org.choongang.cart.service.CartInfoService;
 import org.choongang.commons.ExceptionProcessor;
 import org.choongang.commons.Utils;
+import org.choongang.order.constants.OrderStatus;
 import org.choongang.order.entities.OrderInfo;
 import org.choongang.order.service.OrderSaveService;
+import org.choongang.order.service.OrderStatusService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -29,6 +31,7 @@ public class OrderController implements ExceptionProcessor {
     private final CartInfoService cartInfoService;
     private final CartDeleteService cartDeleteService;
     private final OrderSaveService orderSaveService;
+    private final OrderStatusService orderStatusService;
 
     private final Utils utils;
 
@@ -71,6 +74,7 @@ public class OrderController implements ExceptionProcessor {
         cartDeleteService.delete(form.getCartSeq());
 
         // 주문 상태 -> READY -> ORDER : 주문접수 -> 메일 전송
+        orderStatusService.change(orderInfo.getSeq(), OrderStatus.ORDER);
 
         status.setComplete(); // cartData 세션 비우기
 
