@@ -9,8 +9,10 @@ import org.choongang.email.service.EmailSendService;
 import org.choongang.order.constants.OrderStatus;
 import org.choongang.order.entities.OrderInfo;
 import org.choongang.order.entities.OrderItem;
+import org.choongang.order.entities.OrderStatusHistory;
 import org.choongang.order.repositories.OrderInfoRepository;
 import org.choongang.order.repositories.OrderItemRepository;
+import org.choongang.order.repositories.OrderStatusHistoryRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -25,12 +27,16 @@ public class OrderStatusService {
     private final OrderInfoRepository orderInfoRepository;
     private final OrderItemRepository orderItemRepository;
 
+    private final OrderStatusHistoryRepository orderStatusHistoryRepository;
+
     private final EmailSendService emailSendService;
     private final ConfigInfoService configInfoService;
 
     public void change(Long orderSeq, List<Long> orderItemSeq, OrderStatus status) {
         OrderInfo orderInfo = orderInfoService.get(orderSeq);
         List<OrderItem> items = orderInfo.getOrderItems();
+
+        OrderStatus prevStatus = orderInfo.getStatus(); // 변경 전 상태
 
         int cnt = 0;
         for (OrderItem item : items) {
@@ -47,12 +53,15 @@ public class OrderStatusService {
         orderItemRepository.saveAllAndFlush(items);
 
         // 주문상품 상태가 모두 동일 -> 주문서 상태도 변경
+        OrderStatus nextStatus = null;
         if (cnt == items.size()) {
             orderInfo.setStatus(status);
+            nextStatus = status;
         }
 
         orderInfoRepository.flush();
 
+        boolean emailSent = false;
         if (status.getEmailStatus()) { // 메일 전송 필요 상태
             BasicConfig config = configInfoService.get("config", BasicConfig.class).orElseGet(BasicConfig::new);
 
@@ -66,8 +75,22 @@ public class OrderStatusService {
             Map<String, Object> tplData = new HashMap<>();
             tplData.put("orderInfo", orderInfo);
             emailSendService.sendMail(emailMessage, "order/" + status.name().toLowerCase(), tplData);
-        }
 
+            emailSent = true;
+        }
+        
+        if (nextStatus != null) { // 상태 변경
+            OrderStatusHistory history = OrderStatusHistory
+                    .builder()
+                    .prevStatus(prevStatus)
+                    .status(status)
+                    .orderSeq(orderSeq)
+                    .emailSent(emailSent)
+                    .build();
+
+            orderStatusHistoryRepository.saveAndFlush(history);
+        }
+        
     }
 
     public void change(Long orderSeq, OrderStatus status) {
