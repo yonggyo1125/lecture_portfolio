@@ -33,6 +33,11 @@ public class OrderStatusService {
     private final ConfigInfoService configInfoService;
 
     public void change(Long orderSeq, List<Long> orderItemSeq, OrderStatus status) {
+        change(orderSeq, orderItemSeq, status, false);
+    }
+
+    public void change(Long orderSeq, List<Long> orderItemSeq, OrderStatus status, boolean manualSendEmail) {
+
         OrderInfo orderInfo = orderInfoService.get(orderSeq);
         List<OrderItem> items = orderInfo.getOrderItems();
 
@@ -61,8 +66,15 @@ public class OrderStatusService {
 
         orderInfoRepository.flush();
 
-        boolean emailSent = false;
-        if (status.getEmailStatus()) { // 메일 전송 필요 상태
+        /**
+         * 1) 현재 주문상태에서 메일 전송 기록이 없는 경우
+         * 2) 관리자 페이지 내에서 수동 전송 하는 경우
+         */
+
+        boolean emailSent = orderStatusHistoryRepository.isEmailSent(orderSeq, status);
+        if (manualSendEmail) emailSent = false; // 수동 전송일 경우 강제 전송
+
+        if (!emailSent && status.getEmailStatus()) { // 메일 전송 필요 상태
             BasicConfig config = configInfoService.get("config", BasicConfig.class).orElseGet(BasicConfig::new);
 
             String subject = String.format("[%s][%s] %s",
