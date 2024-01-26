@@ -13,7 +13,6 @@ import org.choongang.order.entities.OrderItem;
 import org.choongang.order.repositories.OrderInfoRepository;
 import org.choongang.order.repositories.OrderItemRepository;
 import org.choongang.product.entities.Product;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,7 +41,7 @@ public class OrderSaveService {
         int payPrice = cartData.getPayPrice(); // 결제금액 합계 - 상품가 - 할인금액 + 배송비
 
         /* 주문 정보 저장 S */
-        OrderInfo orderInfo = new ModelMapper().map(form, OrderInfo.class);
+        OrderInfo orderInfo = new OrderInfo();
         orderInfo.setStatus(OrderStatus.READY);
         orderInfo.setPayType(PayType.valueOf(form.getPayType()));
         orderInfo.setTotalPrice(totalPrice);

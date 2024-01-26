@@ -7,12 +7,16 @@ import org.choongang.cart.service.CartData;
 import org.choongang.cart.service.CartInfoService;
 import org.choongang.commons.ExceptionProcessor;
 import org.choongang.commons.Utils;
+import org.choongang.order.entities.OrderInfo;
+import org.choongang.order.service.OrderSaveService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.support.SessionStatus;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -22,6 +26,8 @@ import java.util.List;
 public class OrderController implements ExceptionProcessor {
 
     private final CartInfoService cartInfoService;
+    private final OrderSaveService orderSaveService;
+
     private final Utils utils;
 
     /**
@@ -55,11 +61,13 @@ public class OrderController implements ExceptionProcessor {
             return utils.tpl("order/order_form");
         }
 
+        OrderInfo orderInfo = orderSaveService.save(form);
 
+        // 결제 수단이 카드, 가상계좌, 계좌이체 -> PG
 
         status.setComplete(); // cartData 세션 비우기
 
-        return "redirect:/order/end/주문번호";
+        return "redirect:/order/end/" + orderInfo.getSeq();
     }
 
     /**
@@ -69,7 +77,19 @@ public class OrderController implements ExceptionProcessor {
      * @param model
      */
     private void commonProcess(String mode, Model model) {
+        mode = StringUtils.hasText(mode) ? mode : "order";
+        String pageTitle = Utils.getMessage("주문하기", "commons");
 
+        List<String> addCommonScript = new ArrayList<>();
+
+        if (mode.equals("order")) {
+            addCommonScript.add("address");
+        } else if (mode.equals("end")) {
+            pageTitle = Utils.getMessage("주문완료", "commons");
+        }
+
+        model.addAttribute("addCommonScript", addCommonScript);
+        model.addAttribute("pageTitle", pageTitle);
         model.addAttribute("mode", mode);
     }
 }
