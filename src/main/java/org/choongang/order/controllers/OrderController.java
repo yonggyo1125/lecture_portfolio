@@ -65,7 +65,11 @@ public class OrderController implements ExceptionProcessor {
 
         // 결제 수단이 카드, 가상계좌, 계좌이체 -> PG
 
+        // 장바구니 주문 상품 삭제
+
         status.setComplete(); // cartData 세션 비우기
+
+
 
         return "redirect:/order/end/" + orderInfo.getSeq();
     }
