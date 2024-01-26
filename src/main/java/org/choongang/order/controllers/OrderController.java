@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.choongang.cart.constants.CartType;
 import org.choongang.cart.service.CartData;
+import org.choongang.cart.service.CartDeleteService;
 import org.choongang.cart.service.CartInfoService;
 import org.choongang.commons.ExceptionProcessor;
 import org.choongang.commons.Utils;
@@ -26,6 +27,7 @@ import java.util.List;
 public class OrderController implements ExceptionProcessor {
 
     private final CartInfoService cartInfoService;
+    private final CartDeleteService cartDeleteService;
     private final OrderSaveService orderSaveService;
 
     private final Utils utils;
@@ -66,6 +68,9 @@ public class OrderController implements ExceptionProcessor {
         // 결제 수단이 카드, 가상계좌, 계좌이체 -> PG
 
         // 장바구니 주문 상품 삭제
+        cartDeleteService.delete(form.getCartSeq());
+
+        // 주문 상태 -> READY -> ORDER : 주문접수 -> 메일 전송
 
         status.setComplete(); // cartData 세션 비우기
 

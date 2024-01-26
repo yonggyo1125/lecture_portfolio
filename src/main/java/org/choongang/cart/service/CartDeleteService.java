@@ -1,6 +1,5 @@
 package org.choongang.cart.service;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.choongang.cart.repositories.CartInfoRepository;
 import org.choongang.commons.Utils;
@@ -17,7 +16,6 @@ import java.util.List;
 public class CartDeleteService {
 
     private final CartInfoRepository cartInfoRepository;
-    private final HttpServletRequest request;
     private final Utils utils;
 
     public void delete(List<Long> seq) {
