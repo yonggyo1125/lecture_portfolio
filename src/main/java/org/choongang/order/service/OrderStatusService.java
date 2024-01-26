@@ -108,4 +108,8 @@ public class OrderStatusService {
     public void change(Long orderSeq, OrderStatus status) {
         change(orderSeq, null, status);
     }
+
+    public void change(Long orderSeq, OrderStatus status, boolean manualEmailSend) {
+        change(orderSeq, null, status, manualEmailSend);
+    }
 }

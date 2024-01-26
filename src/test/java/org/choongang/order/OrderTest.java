@@ -28,9 +28,9 @@ public class OrderTest {
 
     @Test
     void test1() {
-        Long seq = 1706250801849L;
+        Long seq = 1706258589224L;
 
-        orderStatusService.change(seq, OrderStatus.ORDER);
+        orderStatusService.change(seq, OrderStatus.ORDER, true);
 
         OrderInfo data = orderInfoService.get(seq);
         OrderStatus status = data.getStatus();
@@ -38,6 +38,8 @@ public class OrderTest {
         System.out.println(status);
 
         data.getOrderItems().forEach(i -> System.out.println(i.getStatus()));
+
+        //orderStatusService.change(seq, OrderStatus.ORDER);
     }
 
     @Test
