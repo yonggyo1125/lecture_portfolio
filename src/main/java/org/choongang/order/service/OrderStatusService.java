@@ -1,6 +1,10 @@
 package org.choongang.order.service;
 
 import lombok.RequiredArgsConstructor;
+import org.choongang.admin.config.controllers.BasicConfig;
+import org.choongang.admin.config.service.ConfigInfoService;
+import org.choongang.commons.Utils;
+import org.choongang.email.service.EmailMessage;
 import org.choongang.email.service.EmailSendService;
 import org.choongang.order.constants.OrderStatus;
 import org.choongang.order.entities.OrderInfo;
@@ -9,7 +13,9 @@ import org.choongang.order.repositories.OrderInfoRepository;
 import org.choongang.order.repositories.OrderItemRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +26,7 @@ public class OrderStatusService {
     private final OrderItemRepository orderItemRepository;
 
     private final EmailSendService emailSendService;
-
+    private final ConfigInfoService configInfoService;
 
     public void change(Long orderSeq, List<Long> orderItemSeq, OrderStatus status) {
         OrderInfo orderInfo = orderInfoService.get(orderSeq);
@@ -33,7 +39,7 @@ public class OrderStatusService {
                 item.setStatus(status);
             }
 
-            if (orderInfo.getStatus() == item.getStatus()) {
+            if (orderInfo.getStatus().ordinal() < item.getStatus().ordinal()) {
                 cnt++;
             }
         }
@@ -46,6 +52,22 @@ public class OrderStatusService {
         }
 
         orderInfoRepository.flush();
+
+        if (status.getEmailStatus()) { // 메일 전송 필요 상태
+            BasicConfig config = configInfoService.get("config", BasicConfig.class).orElseGet(BasicConfig::new);
+
+            String subject = String.format("[%s][%s] %s",
+                        config.getSiteTitle(),
+                        Utils.getMessage("OrderStatus." + status.name(), "commons"),
+                        Utils.getMessage("안내_메일", "commons")
+                    );
+            EmailMessage emailMessage = new EmailMessage(orderInfo.getOrderEmail(), subject, subject);
+
+            Map<String, Object> tplData = new HashMap<>();
+            tplData.put("orderInfo", orderInfo);
+            emailSendService.sendMail(emailMessage, "order/" + status.name().toLowerCase(), tplData);
+        }
+
     }
 
     public void change(Long orderSeq, OrderStatus status) {
