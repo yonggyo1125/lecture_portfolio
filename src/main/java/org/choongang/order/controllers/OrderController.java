@@ -1,5 +1,6 @@
 package org.choongang.order.controllers;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.choongang.cart.constants.CartType;
 import org.choongang.cart.service.CartData;
@@ -8,15 +9,16 @@ import org.choongang.commons.ExceptionProcessor;
 import org.choongang.commons.Utils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.validation.Errors;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.support.SessionStatus;
 
 import java.util.List;
 
 @Controller
 @RequestMapping("/order")
 @RequiredArgsConstructor
+@SessionAttributes({"cartData", "mode"}) // model.addAttribute -> 세션쪽에도 자동 추가
 public class OrderController implements ExceptionProcessor {
 
     private final CartInfoService cartInfoService;
@@ -33,7 +35,7 @@ public class OrderController implements ExceptionProcessor {
      * @return
      */
     @GetMapping
-    public String order(@RequestParam(name="seq", required = false) List<Long> seq, Model model) {
+    public String order(@RequestParam(name="seq", required = false) List<Long> seq, @ModelAttribute RequestOrder form, Model model) {
         commonProcess("order", model);
 
         CartType mode = seq == null || seq.isEmpty() ? CartType.DIRECT : CartType.CART;
@@ -43,6 +45,21 @@ public class OrderController implements ExceptionProcessor {
         model.addAttribute("cartData", data);
 
         return utils.tpl("order/order_form");
+    }
+
+    @PostMapping
+    public String orderPs(@Valid RequestOrder form, Errors errors, Model model, SessionStatus status) {
+        commonProcess("order", model);
+
+        if (errors.hasErrors()) {
+            return utils.tpl("order/order_form");
+        }
+
+
+
+        status.setComplete(); // cartData 세션 비우기
+
+        return "redirect:/order/end/주문번호";
     }
 
     /**
