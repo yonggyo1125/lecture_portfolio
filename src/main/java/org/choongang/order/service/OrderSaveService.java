@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.choongang.cart.entities.CartInfo;
 import org.choongang.cart.service.CartData;
 import org.choongang.cart.service.CartInfoService;
+import org.choongang.member.MemberUtil;
 import org.choongang.order.constants.OrderStatus;
 import org.choongang.order.constants.PayType;
 import org.choongang.order.controllers.RequestOrder;
@@ -27,6 +28,7 @@ public class OrderSaveService {
     private final CartInfoService cartInfoService;
     private final OrderInfoRepository orderInfoRepository;
     private final OrderItemRepository orderItemRepository;
+    private final MemberUtil memberUtil;
 
     public OrderInfo save(RequestOrder form) {
         /** 장바구니에서 상품 정보 가져오기 */
@@ -48,6 +50,18 @@ public class OrderSaveService {
         orderInfo.setTotalDeliveryPrice(totalDeliveryPrice);
         orderInfo.setPayPrice(payPrice);
 
+        orderInfo.setMember(memberUtil.getMember());
+        orderInfo.setOrderName(form.getOrderName());
+        orderInfo.setOrderCellPhone(form.getOrderCellPhone());
+        orderInfo.setOrderEmail(form.getOrderEmail());
+        orderInfo.setReceiverName(form.getReceiverName());
+        orderInfo.setReceiverCellPhone(form.getReceiverCellPhone());
+        orderInfo.setZonecode(form.getZonecode());
+        orderInfo.setAddress(form.getAddress());
+        orderInfo.setAddressSub(form.getAddressSub());
+        orderInfo.setDeliveryMemo(form.getDeliveryMemo());
+        orderInfo.setDepositor(form.getDepositor());
+
         orderInfoRepository.saveAndFlush(orderInfo);
         /* 주문 정보 저장 E */
 
@@ -56,6 +70,7 @@ public class OrderSaveService {
         for (CartInfo cartItem : cartItems) {
             Product product = cartItem.getProduct();
             OrderItem item = OrderItem.builder()
+                    .status(OrderStatus.READY)
                     .product(product)
                     .optionName(product.getOptionName())
                     .productName(product.getName())
