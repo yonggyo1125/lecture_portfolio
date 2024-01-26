@@ -108,7 +108,26 @@
                 <th:block th:text="#{원}"></th:block>
             </dd>
         </dl>
+        <dl>
+            <dt th:text="#{결제수단}"></dt>
+            <dd>
+                <input type="radio" name="payType" value="LBT" id="payType_LBT">
+                <label for="payType_LBT" th:text="#{무통장_입금}"></label>
+
+                <input type="radio" name="payType" value="VACCOUNT" id="payType_VACCOUNT">
+                <label for="payType_VACCOUNT" th:text="#{가상계좌}"></label>
+
+                <input type="radio" name="payType" value="CARD" id="payType_CARD">
+                <label for="payType_CARD" th:text="#{신용카드}"></label>
+
+                <input type="radio" name="payType" value="DIRECT" id="payType_DIRECT">
+                <label for="payType_DIRECT" th:text="#{계좌이체}"></label>
+            </dd>
+        </dl>
         <h2 th:text="#{약관_동의}"></h2>
+
+
+
     </form>
 </main>
 </html>
