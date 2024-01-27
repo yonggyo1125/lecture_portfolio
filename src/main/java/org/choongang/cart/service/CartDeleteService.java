@@ -1,6 +1,5 @@
 package org.choongang.cart.service;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.choongang.cart.repositories.CartInfoRepository;
 import org.choongang.commons.Utils;
@@ -9,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -16,8 +16,20 @@ import java.util.List;
 public class CartDeleteService {
 
     private final CartInfoRepository cartInfoRepository;
-    private final HttpServletRequest request;
     private final Utils utils;
+
+    public void delete(List<Long> seq) {
+        if (seq == null || seq.isEmpty()) {
+            return;
+        }
+
+        cartInfoRepository.deleteAllById(seq);
+        cartInfoRepository.flush();
+    }
+
+    public void delete(Long seq) {
+        delete(Arrays.asList(seq));
+    }
 
     public void deleteList(List<Integer> chks) {
         if (chks == null || chks.isEmpty()) {

@@ -5,31 +5,35 @@
 <main layout:fragment="content">
     <h1 th:text="#{주문서_작성}"></h1>
 
-    <form name="frmOrder" method="post" th:action="@{/order}" autocomplete="off" th:object="${cartData}">
+    <form name="frmOrder" method="post" th:action="@{/order}" autocomplete="off" th:object="${requestOrder}">
 
         <h2 th:text="#{주문_상품}"></h2>
-
-        <th:block th:replace="~{front/cart/_items::items}"></th:block>
+        <th:block th:object="${cartData}">
+            <th:block th:replace="~{front/cart/_items::items}"></th:block>
+        </th:block>
 
         <h2 th:text="#{주문자_정보}"></h2>
 
         <dl>
             <dt th:text="#{주문자_이름}"></dt>
             <dd>
-                <input type="text" name="orderName">
+                <input type="text" name="orderName" th:field="*{orderName}">
+                <div class="error" th:each="err : ${#fields.errors('orderName')}" th:text="${err}"></div>
             </dd>
         </dl>
         <dl>
             <dt th:text="#{휴대전화번호}"></dt>
             <dd>
-                <input type="text" name="orderCellPhone">
+                <input type="text" name="orderCellPhone" th:field="*{orderCellPhone}">
+                <div class="error" th:each="err : ${#fields.errors('orderCellPhone')}" th:text="${err}"></div>
             </dd>
         </dl>
 
         <dl>
             <dt th:text="#{이메일}"></dt>
             <dd>
-                <input type="text" name="orderEmail">
+                <input type="text" name="orderEmail" th:field="*{orderEmail}">
+                <div class="error" th:each="err : ${#fields.errors('orderEmail')}" th:text="${err}"></div>
             </dd>
         </dl>
 
@@ -38,20 +42,22 @@
         <dl>
             <dt th:text="#{받는분_이름}"></dt>
             <dd>
-                <input type="text" name="receiverName">
+                <input type="text" name="receiverName" th:field="*{receiverName}">
+                <div class="error" th:each="err : ${#fields.errors('receiverName')}" th:text="${err}"></div>
             </dd>
         </dl>
         <dl>
             <dt th:text="#{휴대전화번호}"></dt>
             <dd>
-                <input type="text" name="receiverCellPhone">
+                <input type="text" name="receiverCellPhone" th:field="*{receiverCellPhone}">
+                <div class="error" th:each="err : ${#fields.errors('receiverCellPhone')}" th:text="${err}"></div>
             </dd>
         </dl>
         <dl>
             <dt th:text="#{배송_주소}"></dt>
             <dd>
                 <div class="address_rows">
-                    <input type="text" name="zonecode" th:placeholder="#{우편번호}" readonly id="zonecode">
+                    <input type="text" name="zonecode" th:placeholder="#{우편번호}" readonly id="zonecode" th:field="*{zonecode}">
                     <button type="button" class="search_address" data-zonecode-id="zonecode" data-address-id="address">
                         <i class="xi-search"></i>
                         <th:block th:text="#{주소_찾기}"></th:block>
@@ -59,56 +65,97 @@
                 </div>
 
                 <div class="address_rows">
-                    <input type="text" name="address" th:placeholder="#{주소}" readonly id="address">
+                    <input type="text" name="address" th:placeholder="#{주소}" readonly id="address" th:field="*{address}">
                 </div>
 
                 <div class="address_rows">
-                    <input type="text" name="addressSub" th:pleaceholder="#{나머지_주소}" readonly>
+                    <input type="text" name="addressSub" th:pleaceholder="#{나머지_주소}" th:field="*{addressSub}">
                 </div>
+
+                <div class="error" th:each="err : ${#fields.errors('zonecode')}" th:text="${err}"></div>
+                <div class="error" th:each="err : ${#fields.errors('address')}" th:text="${err}"></div>
             </dd>
         </dl>
         <dl>
             <dt th:text="#{배송_메세지}"></dt>
             <dd>
-                <input type="text" name="deliveryMemo">
+                <input type="text" name="deliveryMemo" th:field="*{deliveryMemo}">
+                <div class="error" th:each="err : ${#fields.errors('deliveryMemo')}" th:text="${err}"></div>
             </dd>
         </dl>
 
         <h2 th:text="#{결제_정보}"></h2>
-
-        <dl>
-            <dt th:text="#{상품합계}"></dt>
-            <dd>
-                <span th:text="*{totalPrice >= 1000 ? #numbers.formatInteger(totalPrice, 3, 'COMMA') : totalPrice}"></span>
-                <th:block th:text="#{원}"></th:block>
-            </dd>
-        </dl>
-        <dl>
-            <dt th:text="#{배송비}"></dt>
-            <dd>
-                <th:block th:if="*{totalDeliveryPrice > 0}">
-                    <span th:text="*{totalDeliveryPrice >= 1000 ? #numbers.formatInteger(totalDeliveryPrice, 3, 'COMMA') : totalDeliveryPrice}"></span>
+        <th:block th:object="${cartData}">
+            <dl>
+                <dt th:text="#{상품합계}"></dt>
+                <dd>
+                    <span th:text="*{totalPrice >= 1000 ? #numbers.formatInteger(totalPrice, 3, 'COMMA') : totalPrice}"></span>
                     <th:block th:text="#{원}"></th:block>
-                </th:block>
-                <th:block th:unless="*{totalDeliveryPrice > 0}" th:text="#{무료배송}"></th:block>
-            </dd>
-        </dl>
+                </dd>
+            </dl>
+            <dl>
+                <dt th:text="#{배송비}"></dt>
+                <dd>
+                    <th:block th:if="*{totalDeliveryPrice > 0}">
+                        <span th:text="*{totalDeliveryPrice >= 1000 ? #numbers.formatInteger(totalDeliveryPrice, 3, 'COMMA') : totalDeliveryPrice}"></span>
+                        <th:block th:text="#{원}"></th:block>
+                    </th:block>
+                    <th:block th:unless="*{totalDeliveryPrice > 0}" th:text="#{무료배송}"></th:block>
+                </dd>
+            </dl>
 
-        <dl th:if="*{totalDiscount > 0}">
-            <dt th:text="#{상품할인}"></dt>
+            <dl th:if="*{totalDiscount > 0}">
+                <dt th:text="#{상품할인}"></dt>
+                <dd>
+                    <span th:text="*{totalDiscount >= 1000 ? #numbers.formatInteger(totalDiscount * -1, 3, 'COMMA') : totalDiscount * -1}"></span>
+                    <th:block th:text="#{원}"></th:block>
+                </dd>
+            </dl>
+            <dl>
+                <dt th:text="#{결제금액}"></dt>
+                <dd>
+                    <span th:text="*{payPrice >= 1000 ? #numbers.formatInteger(payPrice, 3, 'COMMA') : payPrice}"></span>
+                    <th:block th:text="#{원}"></th:block>
+                </dd>
+            </dl>
+        </th:block>
+
+        <dl>
+            <dt th:text="#{결제수단}"></dt>
             <dd>
-                <span th:text="*{totalDiscount >= 1000 ? #numbers.formatInteger(totalDiscount * -1, 3, 'COMMA') : totalDiscount * -1}"></span>
-                <th:block th:text="#{원}"></th:block>
+                <input type="radio" name="payType" value="LBT" id="payType_LBT" th:field="*{payType}">
+                <label for="payType_LBT" th:text="#{무통장_입금}"></label>
+
+                <input type="radio" name="payType" value="VACCOUNT" id="payType_VACCOUNT" th:field="*{payType}">
+                <label for="payType_VACCOUNT" th:text="#{가상계좌}"></label>
+
+                <input type="radio" name="payType" value="CARD" id="payType_CARD" th:field="*{payType}">
+                <label for="payType_CARD" th:text="#{신용카드}"></label>
+
+                <input type="radio" name="payType" value="DIRECT" id="payType_DIRECT" th:field="*{payType}">
+                <label for="payType_DIRECT" th:text="#{계좌이체}"></label>
+
+                <div class="error" th:each="err : ${#fields.errors('payType')}" th:text="${err}"></div>
             </dd>
         </dl>
-        <dl>
-            <dt th:text="#{결제금액}"></dt>
+        <dl class="depositor_box">
+            <dt th:text="#{입금자명}"></dt>
             <dd>
-                <span th:text="*{payPrice >= 1000 ? #numbers.formatInteger(payPrice, 3, 'COMMA') : payPrice}"></span>
-                <th:block th:text="#{원}"></th:block>
+                <input type="text" name="depositor" th:field="*{depositor}">
+                <div class="error" th:each="err : ${#fields.errors('depositor')}" th:text="${err}"></div>
             </dd>
         </dl>
         <h2 th:text="#{약관_동의}"></h2>
+        <textarea>약관...</textarea>
+        <div>
+            <input type="checkbox" name="agree" id="agree">
+            <label for="agree" th:text="#{주문_결제_약관에_동의합니다.}"></label>
+        </div>
+        <div class="error" th:each="err : ${#fields.errors('agree')}" th:text="${err}"></div>
+
+        <div class="error global" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></div>
+        <button type="submit" th:text="#{주문하기}"></button>
+
     </form>
 </main>
 </html>
