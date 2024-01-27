@@ -38,5 +38,5 @@
 - [달력](https://github.com/yonggyo1125/lecture_portfolio/blob/calendar/CALENDAR.md)
 - [CSV파일 읽어오기](https://github.com/yonggyo1125/lecture_portfolio/blob/master/READ_CSV.md)
 - [엑셀파일 읽어오기](https://github.com/yonggyo1125/lecture_portfolio/blob/master/READ_XLS.md)
-- 배너 관리
-- 차트 출력하기 
+- [배너 관리](https://github.com/yonggyo1125/lecture_portfolio/blob/master/BANNER.md)
+- [차트 출력하기](https://github.com/yonggyo1125/lecture_portfolio/blob/master/CHART.md) 
