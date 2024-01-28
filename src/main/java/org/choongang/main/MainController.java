@@ -19,6 +19,6 @@ public class MainController {
 
         model.addAttribute("addCommonScript", new String[] {"upbit"});
 
-        return utils.tpl("main/index2");
+        return utils.tpl("main/index3");
     }
 }

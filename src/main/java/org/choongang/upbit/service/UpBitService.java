@@ -11,12 +11,14 @@ import org.choongang.upbit.entities.QUpBitTicker;
 import org.choongang.upbit.entities.UpBitTicker;
 import org.choongang.upbit.repositories.UpBitTickerRepository;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.springframework.data.domain.Sort.Order.asc;
@@ -27,7 +29,7 @@ public class UpBitService {
 
     private final UpBitTickerRepository repository;
 
-    //@Scheduled(fixedDelay=1, timeUnit = TimeUnit.MINUTES)
+    @Scheduled(fixedDelay=1, timeUnit = TimeUnit.MINUTES)
     public void updateData() {
        RestTemplate restTemplate = new RestTemplate();
        String apiMarketUrl = "https://api.upbit.com/v1/market/all";
