@@ -16,6 +16,11 @@ public class Menu {
                 new MenuDetail("api", "API 설정", "/admin/config/api")
         ));
 
+        menus.put("banner", Arrays.asList(
+            new MenuDetail("group", "배너관리", "/admin/banner"),
+            new MenuDetail("add", "배너등록", "/admin/banner/add")
+        ));
+
         menus.put("member", Arrays.asList(
             new MenuDetail("list", "회원목록", "/admin/member"),
             new MenuDetail("authority", "회원권한", "/admin/member/authority")

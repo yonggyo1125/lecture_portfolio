@@ -3,6 +3,10 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{front/layouts/main}">
 <main layout:fragment="content">
-
+    <div class="banners" th:each="banner : ${@utils.getBanners('mainBanner1')}" th:object="${banner}">
+        <a th:if="*{bannerImage != null}" th:href="*{bLink}" th:target="*{target}">
+            <img th:src="*{bannerImage.fileUrl}">
+        </a>
+    </div>
 </main>
 </html>

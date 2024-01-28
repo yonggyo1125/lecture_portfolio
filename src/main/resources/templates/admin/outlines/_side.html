@@ -4,6 +4,11 @@
         <a th:href="@{/admin/config}" th:classappend="${menuCode} == 'config' ? 'on'">
             <i class="xi-cog"></i> 기본설정
         </a>
+
+        <a th:href="@{/admin/banner}" th:classappend="${menuCode} == 'banner' ? 'on'">
+            <i class="xi-image"></i> 배너관리
+        </a>
+
         <a th:href="@{/admin/member}" th:classappend="${menuCode} == 'member' ? 'on'">
             <i class="xi-users"></i> 회원관리
         </a>

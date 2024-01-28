@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.choongang.admin.config.controllers.ApiConfig;
 import org.choongang.admin.config.controllers.BasicConfig;
 import org.choongang.admin.config.service.ConfigInfoService;
+import org.choongang.banner.entities.Banner;
+import org.choongang.banner.service.BannerInfoService;
 import org.choongang.commons.api.BusinessPermit;
 import org.choongang.commons.api.BusinessPermitData;
 import org.choongang.file.entities.FileInfo;
@@ -38,6 +40,7 @@ public class Utils {
     private final HttpSession session;
     private final FileInfoService fileInfoService;
     private final ConfigInfoService infoService;
+    private final BannerInfoService bannerInfoService;
 
     private static final ResourceBundle commonsBundle;
     private static final ResourceBundle validationsBundle;
@@ -307,5 +310,15 @@ public class Utils {
         } catch (JsonProcessingException e) {}
 
         return "{}";
+    }
+
+    /**
+     * 배너 목록
+     *
+     * @param groupCode : 배너 그룹 코드
+     * @return
+     */
+    public List<Banner> getBanners(String groupCode) {
+        return bannerInfoService.getList(groupCode);
     }
 }
