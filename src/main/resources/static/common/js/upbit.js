@@ -1,12 +1,4 @@
 window.addEventListener("DOMContentLoaded", async function() {
-    const script = document.createElement("script");
-    script.src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.min.js";
-    script.type="module";
-    document.head.insertBefore(script, document.getElementsByTagName("script")[0]);
-
-    let chartData = {};
-
-
     const response = await fetch("https://api.coinpaprika.com/v1/tickers?quotes=KRW")
     const json = await response.json();
     const list50 = json.slice(0, 50);
